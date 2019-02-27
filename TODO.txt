@@ -1,0 +1,11 @@
+easy:
+fullscreen
+
+sound:
+charging, firing, thrusters?
+
+visual:
+stars background, explosions?
+
+gameplay:
+ship-ship collisions, HP + lasers, heat, rockets (kinetic), boost?
