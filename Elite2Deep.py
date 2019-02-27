@@ -9,8 +9,8 @@ black = (0, 0, 0) # RGB code (0-255)
 
 # Initialize pygame, set up screen
 pg.init()
-reso   = (xmax,ymax) = (1000,600)
-screen = pg.display.set_mode(reso)
+reso   = (xmax,ymax) = (1920,1080)
+screen = pg.display.set_mode(reso, pg.FULLSCREEN)
 
 # Load bitmaps
 

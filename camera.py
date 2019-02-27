@@ -35,7 +35,7 @@ class Camera(object):
     xdist = xmax - xmin
     ydist = ymax - ymin
 
-    self.scale = 1.5*max(ydist/self.ydispmax, xdist/self.xdispmax, 0.5)
+    self.scale = 2.0*max(ydist/self.ydispmax, xdist/self.xdispmax, 0.5)
 
     self.camx = xc 
     self.camy = yc
