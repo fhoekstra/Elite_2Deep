@@ -13,9 +13,14 @@ class WpnRailgun(object):
     self.mother = mother
     self.chargetimer = None
     self.wpnrange = 2_000
-    self.dmg = 40
+    self.dmg = 30
+    self.clipsize = 5
+    self.clip = 5
+    self.reloadtime = 3.5
+    self.reloadtimer = None
+    self.ammo = 40
   
-  def charge(self, continue_charging):
+  def _charge(self, continue_charging):
     """Charges railgun for 1 second. Returns whether it can fire or not."""
     if continue_charging: # key pressed
       if self.chargetimer is None: # charging has not started
@@ -32,14 +37,33 @@ class WpnRailgun(object):
       self.chargetimer = None # remove clock
       return False # no fire
 
-  def fire(self, shiplist, statlist):
+  def _fire(self, shiplist, statlist):
+    self.clip -= 1
     railbeam = ProjRailgun(self.mother.x, self.mother.y, self.mother.phi, self.wpnrange)
     statlist.append(railbeam)
     self.mother.hit_ships(shiplist, railbeam.line_ends, self.dmg)
+    self._check_for_start_reload()
+    
+  def _check_for_start_reload(self):
+    if self.clip < 1 and self.ammo > 0:
+      self.reloadtimer = Timer()
+      self.reloadtimer.start()
+  
+  def _check_if_reloading_and_done(self):
+    if self.reloadtimer is not None:
+      if self.reloadtimer.get() > self.reloadtime:
+        if self.ammo >= self.clipsize:
+          self.ammo -= self.clipsize
+          self.clip = self.clipsize
+        else:
+          self.clip = self.ammo
+          self.ammo = 0
+        self.reloadtimer = None
 
-  def handle_keypress(self, key_pressed, shiplist, staticlist):
-    if self.charge(key_pressed):
-      self.fire(shiplist, staticlist)
+  def handle_keypress(self, key_pressed, shiplist, staticlist, objlist):
+    self._check_if_reloading_and_done()
+    if self.clip > 0 and self._charge(key_pressed):
+      self._fire(shiplist, staticlist)
 
 class ProjRailgun(object):
   def __init__(self, x, y, phi, wpnrange):
@@ -56,9 +80,9 @@ class ProjRailgun(object):
         y+wpnrange*np.cos(phi))
     ])
     
-  def draw(self, surf, camparams, resolution):
+  def draw(self, surf, camparams):
     if self.timer.get() < 10.:
-      screenshape = xyworldtoscreen(self.line_ends, camparams, resolution)
+      screenshape = xyworldtoscreen(self.line_ends, camparams)
       pg.draw.line(surf, np.exp(-self.timer.get()/7.)*self.color,
                    screenshape[0], screenshape[1], 2)
       return True # keep after this draw cycle
@@ -98,7 +122,7 @@ class WpnLaser(object):
       self.hittime = None
     return
   
-  def handle_keypress(self, keypress, shiplist, staticlist):
+  def handle_keypress(self, keypress, shiplist, staticlist, objlist):
     if keypress:
       self.fire(shiplist, staticlist)
 
@@ -119,8 +143,8 @@ class ProjLaser(object):
         y+wpnrange*np.cos(phi))
     ])
     
-  def draw(self, surf, camparams, resolution):
-    screenshape = xyworldtoscreen(self.line_ends, camparams, resolution)
+  def draw(self, surf, camparams):
+    screenshape = xyworldtoscreen(self.line_ends, camparams)
     pg.draw.line(surf, self.outercolor, screenshape[0], screenshape[1], 4)
     pg.draw.line(surf, self.innercolor, screenshape[0], screenshape[1], 2)
     return False # remove after this draw cycle

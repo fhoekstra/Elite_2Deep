@@ -9,9 +9,8 @@ black = (0, 0, 0) # RGB code (0-255)
 
 # Initialize pygame, set up screen
 pg.init()
-reso   = (xmax,ymax) = (1920,1080)
-screen = pg.display.set_mode(reso, pg.FULLSCREEN)
-
+reso   = (xmax,ymax) = (1200,600)
+screen = pg.display.set_mode(reso, pg.RESIZABLE)
 # Load bitmaps
 
 # Init model
@@ -30,7 +29,7 @@ shiplist = [ship1, ship2]
 objlist = []
 staticlist = []
 
-camera = Camera(reso)
+camera = Camera()
 camera.update(shiplist)
 
 # Start sim loop
@@ -72,14 +71,14 @@ while running :
             ship.update_position(dt)
 
             # Draw new frame here
-            ship.draw(screen, camera.getparams(), reso)
+            ship.draw(screen, camera.getparams())
         
         for obj in objlist:
             obj.update_velocities(dt)
             obj.update_position(dt)
-            obj.draw(screen, camera.getparams(), reso)
+            obj.draw(screen, camera.getparams())
         for stat in staticlist:
-            if not stat.draw(screen, camera.getparams(), reso):
+            if not stat.draw(screen, camera.getparams()):
                 staticlist.pop(staticlist.index(stat))
                 del stat
         # Update screen       

@@ -45,12 +45,12 @@ def boundingbox(pointslist):
     np.amax(y) - np.amin(y)
   )
 
-def xyworldtoscreen(pointslist, camparams, resolution):
-  camscale, camx, camy = camparams
+def xyworldtoscreen(pointslist, camparams):
+  camscale, camx, camy, dispw, disph = camparams
 
   shapetodraw = pointslist - np.array([camx, camy]) # correct for camera pan
   shapetodraw = shapetodraw / camscale # correct for camera zoom
-  shapetodraw += 0.5 * np.array(resolution) # correct for 0,0 not screen centr
+  shapetodraw += 0.5 * np.array([dispw, disph]) # correct for 0,0 not screen centr
 
   return shapetodraw
 

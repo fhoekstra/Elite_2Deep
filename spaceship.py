@@ -2,7 +2,6 @@ import pygame as pg
 import numpy as np
 from utils import (cxor, centershape, rotate, boundingbox, xyworldtoscreen,
  bb_on_line)
-from weapons import ProjRailgun
 from weapons import WpnRailgun, WpnLaser
 
 
@@ -63,11 +62,11 @@ class Spaceship(object):
     self.baseshape = centershape(newshape)
     self._update_rect()
 
-  def draw(self, surf, camparams, resolution):
+  def draw(self, surf, camparams):
     
     shapetodraw = rotate(self.baseshape, self.phi) # rotate shape to phi
     shapetodraw = shapetodraw + np.array([self.x,self.y]) # add physics position
-    shapetodraw = xyworldtoscreen(shapetodraw, camparams, resolution)
+    shapetodraw = xyworldtoscreen(shapetodraw, camparams)
     pg.draw.polygon(surf, self.color, shapetodraw, 3)
     # non-zero width draws lines instead of filling polygon
 
@@ -169,10 +168,10 @@ class Spaceship(object):
 
     # weapons
     self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
-                                shiplist, staticlist)
+                                shiplist, staticlist, objlist)
 
     self.wpnprim.handle_keypress(keys_pressed[self.keymapping['fire']],
-                                 shiplist, staticlist)
+                                 shiplist, staticlist, objlist)
     # calculate world coordinates movement from thruster forces
     self.fx, self.fy = self._ship2world_dirs(thrustx, thrusty)
     return

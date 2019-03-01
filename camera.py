@@ -6,17 +6,20 @@ import pygame as pg
 # then center coordinates around center between ships
 
 class Camera(object):
-  def __init__(self, reso):
-    self.xdispmax, self.ydispmax = reso
+  def __init__(self):
+    self.xdispmax, self.ydispmax = (pg.display.Info().current_w,
+                                  pg.display.Info().current_h)
     self.scale = 1.
     self.camx, self.camy = 0, 0
 
   def getparams(self):
     """ scale, x, y """
-    return self.scale, self.camx, self.camy
+    return self.scale, self.camx, self.camy, self.xdispmax, self.ydispmax
 
   def update(self, objectlist, verbose=False):
     """ objectlist is an iterable of objects with properties x and y """
+    info = pg.display.Info()
+    self.xdispmax, self.ydispmax = info.current_w, info.current_h
     xsom, ysom, N = 0,0,0
     xmax, ymax = objectlist[0].x, objectlist[0].y
     xmin, ymin = objectlist[0].x, objectlist[0].y
