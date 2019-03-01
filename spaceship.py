@@ -7,7 +7,7 @@ class Spaceship(object):
   """ The class that defines a spaceship """
   
   def __init__(self, playernr=1):
-
+    self.playernr = playernr
     # State variables: x, y, phi and derivatives and forces
     self.x, self.y, self.phi = 0,0,0 # phi is from +x to +y
     self.vx, self.vy, self.vphi = 0,0,0
@@ -15,9 +15,10 @@ class Spaceship(object):
     self.m, self.L = 1.,20000.
 
     # Ship properties
-    self.vmax = 1000000
-    self.vphimax = 100000
+    self.vmax = 1000
+    #self.vphimax = 100000
     self.thrusters = 200
+    self.hp = 100
     self.baseshape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
     self.baseshape = centershape(self.baseshape)
 
@@ -27,11 +28,13 @@ class Spaceship(object):
 
     # Weapons
     self.lasercolor = (0,200,0)
-    self.laserrange = 1_000
+    self.laserrange = 700
+    self.laserdps = 20
     self.laserstatus = False
     self.lasercoords = ((self.x, self.y), (self.x, self.y))
+    self.laserhittime = None
     self.railtimer = None
-    self.railrange = 1_500
+    self.railrange = 2_000
 
     # Controls and color
     if playernr == 1:
@@ -68,13 +71,17 @@ class Spaceship(object):
     shapetodraw = rotate(self.baseshape, self.phi) # rotate shape to phi
     shapetodraw = shapetodraw + np.array([self.x,self.y]) # add physics position
     shapetodraw = xyworldtoscreen(shapetodraw, camparams, resolution)
-    pg.draw.polygon(surf, self.color, shapetodraw , 3)
+    pg.draw.polygon(surf, self.color, shapetodraw, 3)
     # non-zero width draws lines instead of filling polygon
 
-    if self.laserstatus:
+    if self.laserstatus: # draw laser
       lasershape = xyworldtoscreen(self.lasercoords, camparams, resolution)
       pg.draw.line(surf, self.lasercolor, lasershape[0], lasershape[1], 1)
       self.laserstatus = False
+
+    # draw HP bar
+    pg.draw.line(surf, self.color, 
+      (350, 300+10*self.playernr), (350+self.hp, 300+10*self.playernr))
 
   def update_position(self, dt):
     """ updates x,y,phi by using vx,vy,vphi and dt"""
@@ -89,7 +96,7 @@ class Spaceship(object):
     updates vx,vy,phi by using fx, fy, fn and dt
     and taking into account m and L
     """
-    invgamma = np.sqrt(1 - (self.vx**2+self.vy**2)/self.vmax**2)
+    invgamma = np.sqrt(np.abs(1 - (self.vx**2+self.vy**2)/self.vmax**2))
     self.vx = self.vx + invgamma*self.fx*dt/self.m
     self.vy = self.vy + invgamma*self.fy*dt/self.m
     self.vphi = self.vphi + self.fn/self.L
@@ -97,8 +104,6 @@ class Spaceship(object):
 
   def _update_rect(self):
     del self.rect
-    #print((rotate(self.baseshape, self.phi) 
-    #    + np.array([self.x, self.y]))[0])
     self.rect = pg.Rect(
       boundingbox(
         rotate(self.baseshape, self.phi) 
@@ -108,9 +113,9 @@ class Spaceship(object):
     return self.rect
 
   def fire_railgun(self, shiplist, statlist):
-    railbeam = Railgun(self.x, self.y, self.phi, self.railrange)
+    railbeam = ProjRailgun(self.x, self.y, self.phi, self.railrange)
     statlist.append(railbeam)
-    self.kill_ships(shiplist, railbeam.line_ends)
+    self.hit_ships(shiplist, railbeam.line_ends, 40)
 
   def fire_laser(self, shiplist, scr):
     self.lasercoords = np.array([
@@ -121,16 +126,31 @@ class Spaceship(object):
       )
     ])
 
-    self.kill_ships(shiplist, self.lasercoords)
+    self.laserstatus = True
+
+    if self.hit_ships(shiplist, self.lasercoords, 0): # ship is hit now
+      if self.laserhittime is None: # first hit of series
+        self.laserhittime = Timer()
+        self.laserhittime.start() # start timer
+      else: # sequential hit
+        self.hit_ships(shiplist, self.lasercoords, 
+                       self.laserdps*self.laserhittime.get())
+        self.laserhittime.start() # restart timer for constant DPS
+    else: # no ships were hit this frame
+      self.laserhittime = None
     return
   
-  def kill_ships(self, shiplist, line_ends):
+  def hit_ships(self, shiplist, line_ends, dmg):
     """ kill ships between line_ends """
+    shiphit = False
     for ship in shiplist:
       if ship is not self:
         if bb_on_line(ship.rect, line_ends):
-          shiplist.pop(shiplist.index(ship))
-          #pg.quit()
+          shiphit = True
+          ship.hp = ship.hp - dmg
+          if ship.hp < 0:
+            shiplist.pop(shiplist.index(ship))
+    return shiphit
   
   def charge_rail(self, continue_charging):
     """Charges laser for 1 second. Returns whether laser can fire or not."""
@@ -178,8 +198,11 @@ class Spaceship(object):
     else:
       thrustx = 0
 
-    if self.charge_rail(keys_pressed[self.keymapping['fire']]):
+    if self.charge_rail(keys_pressed[self.keymapping['secfire']]):
       self.fire_railgun(shiplist, staticlist)
+
+    if keys_pressed[self.keymapping['fire']]:
+      self.fire_laser(shiplist, scr)
 
     self.fx, self.fy = self._ship2world_dirs(thrustx, thrusty)
     return

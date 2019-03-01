@@ -1,11 +1,14 @@
 easy:
-fullscreen
+x fullscreen
 
 sound:
 charging, firing, thrusters?
 
 visual:
-stars background, explosions?
+renderer object, stars background
 
 gameplay:
-ship-ship collisions, HP + lasers, heat, rockets (kinetic), boost?
+ ship-ship collisions
+x HP + lasers,
+ heat,
+ rockets (kinetic)

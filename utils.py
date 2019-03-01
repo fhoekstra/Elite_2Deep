@@ -35,8 +35,8 @@ def rotate(pointslist, phi):
 
 def boundingbox(pointslist):
   """ left, top, width, height """
-  x = pointslist[:,0]
-  y = pointslist[:,1]
+  x = np.array(pointslist[:,0], dtype=np.intc)
+  y = np.array(pointslist[:,1], dtype=np.intc)
 
   return (
     np.amin(x), 

@@ -2,7 +2,13 @@ import numpy as np
 import pygame as pg
 from utils import bb_on_line, xyworldtoscreen, Timer
 
-class Railgun(object):
+"""
+Weapon objects:
+Wpn means a weapon as installed on a spaceship
+Proj means a projectile ejected by the weapon after it has been fired
+"""
+
+class ProjRailgun(object):
   def __init__(self, x, y, phi, railrange):
     self.line_ends = self.create_line_ends(x,y,phi, railrange)
     self.timer = Timer()
@@ -20,7 +26,8 @@ class Railgun(object):
   def draw(self, surf, camparams, resolution):
     if self.timer.get() < 10.:
       screenshape = xyworldtoscreen(self.line_ends, camparams, resolution)
-      pg.draw.line(surf, np.exp(-self.timer.get()/12.)*self.color, screenshape[0], screenshape[1], 2)
+      pg.draw.line(surf, np.exp(-self.timer.get()/12.)*self.color,
+                   screenshape[0], screenshape[1], 2)
       return True
     else:
       return False
