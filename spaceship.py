@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 from utils import *
-from weapons import Railgun
+from weapons import ProjRailgun, WpnRailgun
 
 class Spaceship(object):
   """ The class that defines a spaceship """
@@ -33,8 +33,7 @@ class Spaceship(object):
     self.laserstatus = False
     self.lasercoords = ((self.x, self.y), (self.x, self.y))
     self.laserhittime = None
-    self.railtimer = None
-    self.railrange = 2_000
+    self.wpnsec = WpnRailgun(self)
 
     # Controls and color
     if playernr == 1:
@@ -112,11 +111,6 @@ class Spaceship(object):
     )
     return self.rect
 
-  def fire_railgun(self, shiplist, statlist):
-    railbeam = ProjRailgun(self.x, self.y, self.phi, self.railrange)
-    statlist.append(railbeam)
-    self.hit_ships(shiplist, railbeam.line_ends, 40)
-
   def fire_laser(self, shiplist, scr):
     self.lasercoords = np.array([
       (self.x, self.y),
@@ -152,23 +146,6 @@ class Spaceship(object):
             shiplist.pop(shiplist.index(ship))
     return shiphit
   
-  def charge_rail(self, continue_charging):
-    """Charges laser for 1 second. Returns whether laser can fire or not."""
-    if continue_charging: # key pressed
-      if self.railtimer is None: # charging has not started
-        self.railtimer = Timer()
-        self.railtimer.start()
-        return False # do not fire
-      elif self.railtimer.get() > 1.: # charging is done
-        del self.railtimer
-        self.railtimer = None # remove clock
-        return True # fire
-      return False # charging still in progress, no fire
-    else: # key not pressed
-      del self.railtimer
-      self.railtimer = None # remove clock
-      return False # no fire
-
   def do_key_actions(self, keys_pressed, shiplist, scr, objlist, staticlist):
 
     if cxor(keys_pressed[self.keymapping['leftrot']], 
@@ -198,8 +175,8 @@ class Spaceship(object):
     else:
       thrustx = 0
 
-    if self.charge_rail(keys_pressed[self.keymapping['secfire']]):
-      self.fire_railgun(shiplist, staticlist)
+    self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
+                                shiplist, staticlist)
 
     if keys_pressed[self.keymapping['fire']]:
       self.fire_laser(shiplist, scr)
