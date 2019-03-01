@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 from utils import *
-from weapons import Railgun
+from weapons import ProjRailgun
 
 class Spaceship(object):
   """ The class that defines a spaceship """
