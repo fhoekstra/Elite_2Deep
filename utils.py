@@ -54,6 +54,25 @@ def xyworldtoscreen(pointslist, camparams):
 
   return shapetodraw
 
+def normscreentopixel(pointslist, camparams):
+  """
+  Converts normalized screen values to pixel values.
+  Normalized screen coords are from -0.5 to 0.5 in height (y),
+  with (0,0) in the center.
+  """
+  _, _, _, dispw, disph = camparams
+
+  AR = dispw / disph # aspect ratio
+
+  xn = pointslist[:,0]
+  yn = pointslist[:,1]
+
+  y = 0.5*disph - disph*yn
+  x = 0.5*dispw + dispw*xn/AR
+  shapetodraw = np.array([dispw, -disph])*pointslist
+  shapetodraw = shapetodraw + 0.5 * np.array([dispw, disph])
+  return shapetodraw
+
 def xyscreentoworld(pointslist, camparams, resolution):
   camscale, camx, camy = camparams
 

@@ -1,6 +1,7 @@
 import numpy as np
 import pygame as pg
 from utils import bb_on_line, xyworldtoscreen, Timer
+from UIElements import LaserElement, RailgunElement
 
 """
 Weapon objects:
@@ -10,15 +11,21 @@ Proj means a projectile ejected by the weapon after it has been fired
 
 class WpnRailgun(object):
   def __init__(self, mother):
-    self.mother = mother
-    self.chargetimer = None
-    self.wpnrange = 2_000
+
+    ####### params ########################
+    self.ammo = 40
+    self.wpnrange = 4_000
     self.dmg = 30
     self.clipsize = 5
     self.clip = 5
     self.reloadtime = 3.5
+    #######################################
+
+    # init
+    self.mother = mother
+    self.chargetimer = None
     self.reloadtimer = None
-    self.ammo = 40
+    self.ui = RailgunElement(self)
   
   def _charge(self, continue_charging):
     """Charges railgun for 1 second. Returns whether it can fire or not."""
@@ -91,14 +98,49 @@ class ProjRailgun(object):
 
 class WpnLaser(object):
   def __init__(self, mother):
-    self.mother = mother
-
+    ############ params #####################
     self.range = 700
     self.dps = 20
-    self.coords = ((self.mother.x, self.mother.y), 
-                        (self.mother.x, self.mother.y))
+    self.heatcap = 100
+    self.heatps = 10 # heat per second while firing
+    self.coolps = 5 # heat lost per second while not firing
+    ##########################################
+    # init
+    self.mother = mother
+    self.coords = None # will be initialized when fired
     self.hittime = None
+    self.heatlvl = 0
+    self.overheat = False
+    self.heattimer = None
+    self.cooltimer = None
+
+    self.ui = LaserElement(self)
+
+  def _heat(self):
+    self.cooltimer = None
+    if self.heattimer is None:
+      self.heattimer = Timer()
+      self.heattimer.start()
+    else:
+      self.heatlvl += self.heatps*self.heattimer.get()
+      self.heattimer.start()
+      if self.heatlvl >= self.heatcap:
+        self.overheat = True
   
+  def _cool(self):
+    self.heattimer = None
+    if self.heatlvl <= 0:
+      self.cooltimer = None
+      return
+    if self.cooltimer is None:
+      self.cooltimer = Timer()
+      self.cooltimer.start()
+    else:
+      self.heatlvl -= self.coolps*self.cooltimer.get()
+      self.cooltimer.start()
+      if self.heatlvl <= 0.5*self.heatcap:
+        self.overheat = False
+
   def fire(self, shiplist, staticlist):
     self.coords = np.array([
       (self.mother.x, self.mother.y),
@@ -107,6 +149,8 @@ class WpnLaser(object):
         self.mother.y+self.range*np.cos(self.mother.phi)
       )
     ])
+
+    self._heat()
 
     staticlist.append(ProjLaser(0,0,0,0, line_ends = self.coords))
 
@@ -123,8 +167,10 @@ class WpnLaser(object):
     return
   
   def handle_keypress(self, keypress, shiplist, staticlist, objlist):
-    if keypress:
+    if keypress and not self.overheat:
       self.fire(shiplist, staticlist)
+    else:
+      self._cool()
 
 class ProjLaser(object):
   def __init__(self, x, y, phi, wpnrange, line_ends=None):

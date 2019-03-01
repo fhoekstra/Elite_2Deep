@@ -5,10 +5,14 @@ sound:
 charging, firing, thrusters?
 
 visual:
-renderer object, stars background
+renderer object
+x >< object draw with world coords < nope, leave in utils functions for now
+X >UI element draw with normalized screen coords 
+ >stars background
 
 gameplay:
+x HP + lasers
+x clip and reload for railgun
+x heat
  ship-ship collisions
-x HP + lasers,
- heat,
  rockets (kinetic)

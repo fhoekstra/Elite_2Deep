@@ -3,30 +3,19 @@ import numpy as np
 from utils import (cxor, centershape, rotate, boundingbox, xyworldtoscreen,
  bb_on_line)
 from weapons import WpnRailgun, WpnLaser
-
+from UIElements import HPElement
 
 class Spaceship(object):
   """ The class that defines a spaceship """
   
   def __init__(self, playernr=1):
-    self.playernr = playernr
-    # State variables: x, y, phi and derivatives and forces
-    self.x, self.y, self.phi = 0,0,0 # phi is from +x to +y
-    self.vx, self.vy, self.vphi = 0,0,0
-    self.fx, self.fy, self.fn = 0,0,0
-    self.m, self.L = 1.,20000.
-
     # Ship properties
     self.vmax = 1000
     self.vphimax = 20
     self.thrusters = 200
+    self.m, self.L = 1., 20000. # mass and moment of inertia
     self.hp = 100
     self.baseshape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
-    self.baseshape = centershape(self.baseshape)
-
-    # Collision
-    self.rect = None
-    self._update_rect()
 
     # Weapons
     self.wpnprim = WpnLaser(self)
@@ -57,6 +46,18 @@ class Spaceship(object):
         'fire': pg.K_1,
         'secfire': pg.K_2
       }
+
+    # init
+    self.playernr = playernr
+    self.x, self.y, self.phi = 0,0,0 # phi is from +x to +y
+    self.vx, self.vy, self.vphi = 0,0,0 # State variables: x, y, phi 
+    self.fx, self.fy, self.fn = 0,0,0 # and derivatives and forces
+    self.baseshape = centershape(self.baseshape)
+    self.rect = None # Collision
+    self._update_rect()
+    self.hp_ui = HPElement(playernr, self)
+    self.wpnprim.ui.set(playernr)
+    self.wpnsec.ui.set(playernr)
     
   def set_shape(self, newshape):
     self.baseshape = centershape(newshape)
@@ -70,9 +71,9 @@ class Spaceship(object):
     pg.draw.polygon(surf, self.color, shapetodraw, 3)
     # non-zero width draws lines instead of filling polygon
 
-    # draw HP bar
-    pg.draw.line(surf, self.color, 
-      (350, 300+10*self.playernr), (350+self.hp, 300+10*self.playernr))
+    self.hp_ui.draw(surf, camparams)
+    self.wpnprim.ui.draw(surf, camparams)
+    self.wpnsec.ui.draw(surf, camparams)
 
   def update_position(self, dt):
     """ updates x,y,phi by using vx,vy,vphi and dt"""
