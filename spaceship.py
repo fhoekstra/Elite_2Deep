@@ -19,7 +19,7 @@ class Spaceship(object):
 
     # Ship properties
     self.vmax = 1000
-    #self.vphimax = 100000
+    self.vphimax = 20
     self.thrusters = 200
     self.hp = 100
     self.baseshape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
@@ -87,11 +87,33 @@ class Spaceship(object):
     """
     updates vx,vy,phi by using fx, fy, fn and dt
     and taking into account m and L
+    Also, relativistic-like corrections for maximum velocities like in
+    Elite: Dangerous
     """
-    invgamma = np.sqrt(np.abs(1 - (self.vx**2+self.vy**2)/self.vmax**2))
-    self.vx = self.vx + invgamma*self.fx*dt/self.m
-    self.vy = self.vy + invgamma*self.fy*dt/self.m
-    self.vphi = self.vphi + self.fn/self.L
+    # translational
+    dvx = self.fx*dt/self.m
+    dvy = self.fy*dt/self.m
+    vnewsqrd = (self.vx+dvx)**2+(self.vy+dvy)**2
+
+    if vnewsqrd > self.vx**2 + self.vy**2: # if accelerating, decrease when close
+      invgamma = np.sqrt(np.maximum(0,(1 - vnewsqrd/self.vmax**2))) # to vmax
+    else: # if decelerating, full deceleration is allowed even near vmax
+      invgamma = 1
+
+    self.vx = self.vx + invgamma*dvx
+    self.vy = self.vy + invgamma*dvy
+
+    # rotational
+    dvphi = self.fn/self.L
+    if (self.vphi + dvphi)**2 > self.vphi**2:
+      invgammaphi = np.sqrt(
+        np.maximum(0,
+          (1 - (self.vphi+dvphi)**2/self.vmax**2)
+        )
+      )
+    else:
+      invgammaphi = 1
+    self.vphi = self.vphi + invgammaphi*dvphi
     return self.vx, self.vy, self.vphi
 
   def _update_rect(self):
@@ -117,7 +139,7 @@ class Spaceship(object):
     return shiphit
   
   def do_key_actions(self, keys_pressed, shiplist, scr, objlist, staticlist):
-
+    # rotation thrusters and force
     if cxor(keys_pressed[self.keymapping['leftrot']], 
           keys_pressed[self.keymapping['rightrot']]):
       if keys_pressed[self.keymapping['leftrot']]:
@@ -126,7 +148,7 @@ class Spaceship(object):
         self.fn = -self.thrusters
     else:
       self.fn = 0
-    
+    # translation forward-backward thrusters
     if cxor(keys_pressed[self.keymapping['thrustfwd']], 
           keys_pressed[self.keymapping['thrustbwd']]):
       if keys_pressed[self.keymapping['thrustfwd']]:
@@ -135,7 +157,7 @@ class Spaceship(object):
         thrusty = +self.thrusters
     else:
       thrusty = 0
-    
+    # translation sideways thrusters
     if cxor(keys_pressed[self.keymapping['lefttrans']], 
           keys_pressed[self.keymapping['righttrans']]):
       if keys_pressed[self.keymapping['lefttrans']]:
@@ -145,12 +167,13 @@ class Spaceship(object):
     else:
       thrustx = 0
 
+    # weapons
     self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
                                 shiplist, staticlist)
 
     self.wpnprim.handle_keypress(keys_pressed[self.keymapping['fire']],
                                  shiplist, staticlist)
-
+    # calculate world coordinates movement from thruster forces
     self.fx, self.fy = self._ship2world_dirs(thrustx, thrusty)
     return
 
