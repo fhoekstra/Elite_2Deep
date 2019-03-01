@@ -1,6 +1,6 @@
 import pygame as pg
 
-playermappings =[{
+playermappings =[{ # player 1
         'leftrot':pg.K_LEFT,
         'rightrot': pg.K_RIGHT,
         'thrustfwd': pg.K_UP,
@@ -10,7 +10,7 @@ playermappings =[{
         'fire': pg.K_COMMA,
         'secfire': pg.K_PERIOD
       },
-      {
+      { # player 2
         'leftrot': pg.K_a,
         'rightrot': pg.K_d,
         'thrustfwd': pg.K_w,

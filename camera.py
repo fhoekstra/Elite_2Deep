@@ -1,8 +1,8 @@
 import numpy as np 
 import pygame as pg 
 
-# move and zoom camera for testing
-# the plan: calculate max distance between ships, adjust scale to fit ships
+# move and zoom camera
+# how it works: calculate max distance between ships, adjust scale to fit ships
 # then center coordinates around center between ships
 
 class Camera(object):

@@ -1,5 +1,6 @@
 import pygame as pg
 import numpy as np
+
 from spaceship import Spaceship
 from camera import Camera
 from shipshapes import talon, galactica

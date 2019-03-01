@@ -1,6 +1,6 @@
-import numpy as np
-#import pdb
 import time
+
+import numpy as np
 
 def cxor(a,b):
   return bool(a) != bool(b)
