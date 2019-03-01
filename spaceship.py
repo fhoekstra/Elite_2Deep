@@ -4,6 +4,7 @@ from utils import (cxor, centershape, rotate, boundingbox, xyworldtoscreen,
  bb_on_line)
 from weapons import WpnRailgun, WpnLaser
 from UIElements import HPElement
+from controls import playermappings
 
 class Spaceship(object):
   """ The class that defines a spaceship """
@@ -22,30 +23,12 @@ class Spaceship(object):
     self.wpnsec = WpnRailgun(self)
 
     # Controls and color
+    self.keymapping = playermappings[playernr-1]
     if playernr == 1:
       self.color = (255,10,10)
-      self.keymapping = {
-        'leftrot':pg.K_LEFT,
-        'rightrot': pg.K_RIGHT,
-        'thrustfwd': pg.K_UP,
-        'thrustbwd': pg.K_DOWN,
-        'lefttrans': pg.K_PAGEUP,
-        'righttrans': pg.K_PAGEDOWN,
-        'fire': pg.K_COMMA,
-        'secfire': pg.K_PERIOD
-      }
+
     elif playernr == 2:
       self.color = (0,100,255)
-      self.keymapping = {
-        'leftrot': pg.K_a,
-        'rightrot': pg.K_d,
-        'thrustfwd': pg.K_w,
-        'thrustbwd': pg.K_s,
-        'lefttrans': pg.K_q,
-        'righttrans': pg.K_e,
-        'fire': pg.K_1,
-        'secfire': pg.K_2
-      }
 
     # init
     self.playernr = playernr
