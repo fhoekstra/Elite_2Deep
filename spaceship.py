@@ -2,6 +2,8 @@ import pygame as pg
 import numpy as np
 from utils import *
 from weapons import ProjRailgun
+from weapons import WpnRailgun, WpnLaser
+
 
 class Spaceship(object):
   """ The class that defines a spaceship """
@@ -27,14 +29,8 @@ class Spaceship(object):
     self._update_rect()
 
     # Weapons
-    self.lasercolor = (0,200,0)
-    self.laserrange = 700
-    self.laserdps = 20
-    self.laserstatus = False
-    self.lasercoords = ((self.x, self.y), (self.x, self.y))
-    self.laserhittime = None
-    self.railtimer = None
-    self.railrange = 2_000
+    self.wpnprim = WpnLaser(self)
+    self.wpnsec = WpnRailgun(self)
 
     # Controls and color
     if playernr == 1:
@@ -46,8 +42,8 @@ class Spaceship(object):
         'thrustbwd': pg.K_DOWN,
         'lefttrans': pg.K_PAGEUP,
         'righttrans': pg.K_PAGEDOWN,
-        'fire': pg.K_SEMICOLON,
-        'secfire': pg.K_QUOTE
+        'fire': pg.K_COMMA,
+        'secfire': pg.K_PERIOD
       }
     elif playernr == 2:
       self.color = (0,100,255)
@@ -58,8 +54,8 @@ class Spaceship(object):
         'thrustbwd': pg.K_s,
         'lefttrans': pg.K_q,
         'righttrans': pg.K_e,
-        'fire': pg.K_z,
-        'secfire': pg.K_x
+        'fire': pg.K_1,
+        'secfire': pg.K_2
       }
     
   def set_shape(self, newshape):
@@ -73,11 +69,6 @@ class Spaceship(object):
     shapetodraw = xyworldtoscreen(shapetodraw, camparams, resolution)
     pg.draw.polygon(surf, self.color, shapetodraw, 3)
     # non-zero width draws lines instead of filling polygon
-
-    if self.laserstatus: # draw laser
-      lasershape = xyworldtoscreen(self.lasercoords, camparams, resolution)
-      pg.draw.line(surf, self.lasercolor, lasershape[0], lasershape[1], 1)
-      self.laserstatus = False
 
     # draw HP bar
     pg.draw.line(surf, self.color, 
@@ -111,34 +102,6 @@ class Spaceship(object):
       )
     )
     return self.rect
-
-  def fire_railgun(self, shiplist, statlist):
-    railbeam = ProjRailgun(self.x, self.y, self.phi, self.railrange)
-    statlist.append(railbeam)
-    self.hit_ships(shiplist, railbeam.line_ends, 40)
-
-  def fire_laser(self, shiplist, scr):
-    self.lasercoords = np.array([
-      (self.x, self.y),
-      (
-        self.x+self.laserrange*np.sin(self.phi),
-        self.y+self.laserrange*np.cos(self.phi)
-      )
-    ])
-
-    self.laserstatus = True
-
-    if self.hit_ships(shiplist, self.lasercoords, 0): # ship is hit now
-      if self.laserhittime is None: # first hit of series
-        self.laserhittime = Timer()
-        self.laserhittime.start() # start timer
-      else: # sequential hit
-        self.hit_ships(shiplist, self.lasercoords, 
-                       self.laserdps*self.laserhittime.get())
-        self.laserhittime.start() # restart timer for constant DPS
-    else: # no ships were hit this frame
-      self.laserhittime = None
-    return
   
   def hit_ships(self, shiplist, line_ends, dmg):
     """ kill ships between line_ends """
@@ -152,23 +115,6 @@ class Spaceship(object):
             shiplist.pop(shiplist.index(ship))
     return shiphit
   
-  def charge_rail(self, continue_charging):
-    """Charges laser for 1 second. Returns whether laser can fire or not."""
-    if continue_charging: # key pressed
-      if self.railtimer is None: # charging has not started
-        self.railtimer = Timer()
-        self.railtimer.start()
-        return False # do not fire
-      elif self.railtimer.get() > 1.: # charging is done
-        del self.railtimer
-        self.railtimer = None # remove clock
-        return True # fire
-      return False # charging still in progress, no fire
-    else: # key not pressed
-      del self.railtimer
-      self.railtimer = None # remove clock
-      return False # no fire
-
   def do_key_actions(self, keys_pressed, shiplist, scr, objlist, staticlist):
 
     if cxor(keys_pressed[self.keymapping['leftrot']], 
@@ -198,11 +144,11 @@ class Spaceship(object):
     else:
       thrustx = 0
 
-    if self.charge_rail(keys_pressed[self.keymapping['secfire']]):
-      self.fire_railgun(shiplist, staticlist)
+    self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
+                                shiplist, staticlist)
 
-    if keys_pressed[self.keymapping['fire']]:
-      self.fire_laser(shiplist, scr)
+    self.wpnprim.handle_keypress(keys_pressed[self.keymapping['fire']],
+                                 shiplist, staticlist)
 
     self.fx, self.fy = self._ship2world_dirs(thrustx, thrusty)
     return
