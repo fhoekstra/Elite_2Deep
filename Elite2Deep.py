@@ -3,8 +3,9 @@ import numpy as np
 
 from spaceship import Spaceship
 from camera import Camera
-from shipshapes import talon, galactica
-from mainmenu import MainMenu
+from shipshapes import talon, vector, shipdict
+import mainmenu as mm
+from weapons import wpndict
 
 # Colours
 black = (0, 0, 0) # RGB code (0-255)
@@ -22,7 +23,7 @@ ship2 = Spaceship(playernr=2)
 ship2.x, ship2.y = (-800,0)
 
 ship1.set_shape(talon)
-ship2.set_shape(galactica)
+ship2.set_shape(vector)
 
 # list of player-controlled objects
 shiplist = [ship1, ship2]
@@ -35,8 +36,8 @@ camera = Camera()
 camera.update(shiplist)
 
 # main menu loop
-main = MainMenu(screen)
-main.menuloops()
+menu = mm.MainMenu(screen, shiplist, shipdict, wpndict)
+menu.menuloops()
 
 # Start sim loop
 running = True

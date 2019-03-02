@@ -10,6 +10,14 @@ Wpn means a weapon as installed on a spaceship
 Proj means a projectile ejected by the weapon after it has been fired
 """
 
+def install_laser(ship):
+  return WpnLaser(ship)
+
+def install_railgun(ship):
+  return WpnRailgun(ship)
+
+wpndict = {'Laser': install_laser, 'Railgun': install_railgun}
+
 class WpnRailgun(object):
   def __init__(self, mother):
 
@@ -26,7 +34,7 @@ class WpnRailgun(object):
     self.mother = mother
     self.chargetimer = None
     self.reloadtimer = None
-    self.ui = RailgunElement(self)
+    self.ui = RailgunElement(self, playernr=self.mother.playernr)
   
   def _charge(self, continue_charging):
     """Charges railgun for 1 second. Returns whether it can fire or not."""
@@ -115,7 +123,7 @@ class WpnLaser(object):
     self.heattimer = None
     self.cooltimer = None
 
-    self.ui = LaserElement(self)
+    self.ui = LaserElement(self, playernr=self.mother.playernr)
 
   def _heat(self):
     self.cooltimer = None

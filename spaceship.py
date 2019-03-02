@@ -11,6 +11,11 @@ class Spaceship(object):
   """ The class that defines a spaceship """
   
   def __init__(self, playernr=1):
+    # init
+    self.playernr = playernr
+    self.x, self.y, self.phi = 0,0,0 # phi is from +x to +y
+    self.vx, self.vy, self.vphi = 0,0,0 # State variables: x, y, phi 
+    self.fx, self.fy, self.fn = 0,0,0 # and derivatives and forces
     # Ship properties
     self.vmax = 1000
     self.vphimax = 20
@@ -18,6 +23,9 @@ class Spaceship(object):
     self.m, self.L = 1., 20000. # mass and moment of inertia
     self.hp = 100
     self.baseshape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
+    self.baseshape = centershape(self.baseshape)
+    self.rect = None # Collision
+    self._update_rect()
 
     # Weapons
     self.wpnprim = WpnLaser(self)
@@ -31,14 +39,6 @@ class Spaceship(object):
     elif playernr == 2:
       self.color = (0,100,255)
 
-    # init
-    self.playernr = playernr
-    self.x, self.y, self.phi = 0,0,0 # phi is from +x to +y
-    self.vx, self.vy, self.vphi = 0,0,0 # State variables: x, y, phi 
-    self.fx, self.fy, self.fn = 0,0,0 # and derivatives and forces
-    self.baseshape = centershape(self.baseshape)
-    self.rect = None # Collision
-    self._update_rect()
     self.hp_ui = HPElement(playernr, self)
     self.wpnprim.ui.set(playernr)
     self.wpnsec.ui.set(playernr)

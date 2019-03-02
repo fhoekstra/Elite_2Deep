@@ -11,10 +11,12 @@ talon = np.array([
     ]
 )
 
-galactica = np.array([
+vector = np.array([
     (-30, -50),
     (0,40),
     (30,-50),
     (0,-20)
     ]
 )
+
+shipdict = {'talon': talon, 'vector': vector}

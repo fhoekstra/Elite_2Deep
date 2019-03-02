@@ -21,9 +21,9 @@ class HPElement(object):
       pg.draw.line(scr, self.mother.color, start_pos, end_pos, 30)
 
 class LaserElement(object):
-  def __init__(self, mother):
+  def __init__(self, mother, playernr=1):
     self.mother = mother
-    self.playernr = 1
+    self.playernr = playernr
   
   def set(self, playernr):
     self.playernr = playernr
@@ -51,9 +51,9 @@ class LaserElement(object):
       pg.draw.line(scr, (200,200,200), p2limitline[0], p2limitline[1])
 
 class RailgunElement(object):
-  def __init__(self, mother):
+  def __init__(self, mother, playernr=1):
     self.mother = mother
-    self.playernr = 1
+    self.playernr = playernr
   
   def set(self, playernr):
     self.playernr = playernr
