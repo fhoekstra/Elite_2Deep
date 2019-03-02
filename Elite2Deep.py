@@ -4,6 +4,7 @@ import numpy as np
 from spaceship import Spaceship
 from camera import Camera
 from shipshapes import talon, galactica
+from mainmenu import MainMenu
 
 # Colours
 black = (0, 0, 0) # RGB code (0-255)
@@ -32,6 +33,10 @@ staticlist = []
 
 camera = Camera()
 camera.update(shiplist)
+
+# main menu loop
+main = MainMenu(screen)
+main.menuloops()
 
 # Start sim loop
 running = True

@@ -35,7 +35,7 @@ class LaserElement(object):
       color = (0,255,0)
     if self.playernr == 1:
       start_pos, end_pos = normscreentopixel(np.array([
-        (0.48, 0.44), (0.48, 0.43-0.1*0.01*self.mother.heatlvl)
+        (0.48, 0.44), (0.48, 0.44-0.1*0.01*self.mother.heatlvl)
       ]), camparams)
       p1limitline = normscreentopixel(np.array([
         (0.475, 0.34), (0.485, 0.34)]), camparams)
