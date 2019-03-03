@@ -9,6 +9,11 @@ renderer object
 x >< object draw with world coords < nope, leave in utils functions for now
 X >UI element draw with normalized screen coords 
  >stars background
+X > main menu
+X > weapon select
+ > weapon UI element displacement
+ > ship select
+ > render controls from source
 
 gameplay:
 x HP + lasers

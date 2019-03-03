@@ -4,6 +4,8 @@ import pygame as pg
 from utils import bb_on_line, xyworldtoscreen, Timer
 from UIElements import LaserElement, RailgunElement
 
+from weaponprops import wpndict
+
 """
 Weapon objects:
 Wpn means a weapon as installed on a spaceship
@@ -16,17 +18,18 @@ def install_laser(ship):
 def install_railgun(ship):
   return WpnRailgun(ship)
 
-wpndict = {'Laser': install_laser, 'Railgun': install_railgun}
+wpndict['Laser']['install'] = install_laser
+wpndict['Railgun']['install'] = install_railgun
 
 class WpnRailgun(object):
   def __init__(self, mother):
 
     ####### params ########################
-    self.ammo = 40
-    self.wpnrange = 4_000
-    self.dmg = 30
-    self.clipsize = 5
-    self.clip = 5
+    self.ammo = wpndict['Railgun']['ammo']
+    self.wpnrange = wpndict['Railgun']['range']
+    self.dmg = wpndict['Railgun']['dmg']
+    self.clipsize = wpndict['Railgun']['clip']
+    self.clip = self.clipsize
     self.reloadtime = 3.5
     #######################################
 
@@ -108,11 +111,13 @@ class ProjRailgun(object):
 class WpnLaser(object):
   def __init__(self, mother):
     ############ params #####################
-    self.range = 700
-    self.dps = 20
-    self.heatcap = 100
+    self.range = wpndict['Laser']['range']
+    self.dps = wpndict['Laser']['dps']
     self.heatps = 10 # heat per second while firing
     self.coolps = 5 # heat lost per second while not firing
+    self.cooldown_lvl = wpndict['Laser']['cooldown_lvl'] 
+    # heat level at which overheat status is disabled
+    self.heatcap = wpndict['Laser']['max_heat'] # maximum heat level
     ##########################################
     # init
     self.mother = mother
@@ -147,7 +152,7 @@ class WpnLaser(object):
     else:
       self.heatlvl -= self.coolps*self.cooltimer.get()
       self.cooltimer.start()
-      if self.heatlvl <= 0.5*self.heatcap:
+      if self.heatlvl <= self.cooldown_lvl:
         self.overheat = False
 
   def fire(self, shiplist, staticlist):

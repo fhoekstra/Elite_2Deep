@@ -98,6 +98,11 @@ def bb_on_line(rect, line_ends, dl=1):
       collide = True
   return collide
 
+def remove_key(dct, key):
+  d = dict(dct)
+  del d[key]
+  return d
+
 class Timer(object):  
   def start(self):
     self.start_time = time.clock()

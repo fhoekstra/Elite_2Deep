@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 
-from utils import normscreentopixel
+from utils import normscreentopixel, remove_key
 
 class MainMenu(object):
   def __init__(self,scr, shiplist, shipdict, wpndict):
@@ -30,6 +30,8 @@ class MainMenu(object):
     self.weapons_text = self.sab.render('[W]EAPONS', True, (255,10,10))
     self.quit_text = self.sab.render('[Q]UIT [Esc]', True, (255,0,0))
     self.back_text = self.sab.render('[B]ACK', True, (180,0,0))
+
+    self.sabsmall = pg.font.Font('font/Sabatica-regular.ttf', 14)
   
   def _drawtextsatpos(self, textlist, poslist):
     dispinfo = pg.display.Info()
@@ -66,12 +68,24 @@ class MainMenu(object):
 
     pg.display.flip()
     
-  def _show_wpn_nr(self, cur_wpn, chosen_wpn, playernr):
+  def _render_wpn_props(self, wpn, textlist, poslist):
+    dct = remove_key(wpn, 'install') # this should not be rendered in text
+    dct = remove_key(dct, 'name') # this has already been rendered
+    x = 0.
+    y0, dy = -0.05, -0.05
+    wi = 0 # index
+    for key in dct:
+      textlist.append(self.sab.render(key + " :  " + str(dct[key]), True,
+       (255,255,255)))
+      poslist.append((x, y0+wi*dy))
+      wi += 1
 
+  def _show_wpn_nr(self, cur_wpn, chosen_wpn, playernr):
     textlist = [self.sab.render('PLAYER '+str(playernr), True, (255,255,255))]
     poslist = [(-0.3, 0.4)]
-    textlist.append(self.sab.render('<  ' + cur_wpn + '  >', True, (255,255,255)))
-    poslist.append((0,0))
+    textlist.append(self.sab.render('<  ' + cur_wpn['name'] + '  >', True, (255,255,255)))
+    poslist.append((0,0)) # position of wpn name
+    self._render_wpn_props(cur_wpn, textlist, poslist)
     textlist.append(self.sab.render('ENTER to select', True, (255,255,255)))
     poslist.append((0, -0.3))
     if chosen_wpn is not None:
@@ -97,7 +111,7 @@ class MainMenu(object):
       # choose primary
       while not primchosen:
         if notdrawn:
-          self._show_wpn_nr(wpnlist[j], None, i+1)
+          self._show_wpn_nr(self.wpndict[wpnlist[j]], None, i+1)
           notdrawn = False
         for event in pg.event.get():
           if event.type == pg.KEYDOWN:
@@ -108,7 +122,9 @@ class MainMenu(object):
               j += 1
               notdrawn = True
             if event.key == pg.K_RETURN:
-              self.shiplist[i].wpnprim = self.wpndict[wpnlist[j]](self.shiplist[i])
+              self.shiplist[i].wpnprim = (
+                self.wpndict[wpnlist[j]]['install'](self.shiplist[i])
+              )
               primchosen = wpnlist[j]
         if j < 0:
           j = len(wpnlist) + j # j is negative
@@ -117,7 +133,7 @@ class MainMenu(object):
         pg.event.pump()
       # choose secondary
       while not secchosen:
-        self._show_wpn_nr(wpnlist[j], primchosen, i+1)
+        self._show_wpn_nr(self.wpndict[wpnlist[j]], primchosen, i+1)
         for event in pg.event.get():
           if event.type == pg.KEYDOWN:
             if event.key == pg.K_LEFT:
@@ -127,7 +143,9 @@ class MainMenu(object):
               j += 1
               notdrawn = True
             if event.key == pg.K_RETURN:
-              self.shiplist[i].wpnsec = self.wpndict[wpnlist[j]](self.shiplist[i])
+              self.shiplist[i].wpnsec = (
+                self.wpndict[wpnlist[j]]['install'](self.shiplist[i])
+              )
               secchosen = wpnlist[j]
         if j < 0:
           j = len(wpnlist) + j # j is negative
