@@ -1,7 +1,7 @@
 import pygame as pg
 
 playermappings =[{ # player 1
-        'leftrot':pg.K_LEFT,
+        'leftrot': pg.K_LEFT,
         'rightrot': pg.K_RIGHT,
         'thrustfwd': pg.K_UP,
         'thrustbwd': pg.K_DOWN,
@@ -17,7 +17,26 @@ playermappings =[{ # player 1
         'thrustbwd': pg.K_s,
         'lefttrans': pg.K_q,
         'righttrans': pg.K_e,
-        'fire': pg.K_1,
-        'secfire': pg.K_2
+        'fire': pg.K_4,
+        'secfire': pg.K_5
       }
 ]
+
+normalnames = {
+  pg.K_LEFT : 'left',
+  pg.K_RIGHT : 'right',
+  pg.K_PAGEUP : 'PageUp',
+  pg.K_PAGEDOWN : 'PageDown',
+  pg.K_UP : 'Up',
+  pg.K_DOWN : 'Down',
+  pg.K_COMMA : ' , ',
+  pg.K_PERIOD : ' . ',
+  pg.K_a : 'a',
+  pg.K_s : 's',
+  pg.K_d : 'd',
+  pg.K_q : 'q',
+  pg.K_w : 'w',
+  pg.K_e : 'e',
+  pg.K_4 : '4',
+  pg.K_5 : '5',
+}

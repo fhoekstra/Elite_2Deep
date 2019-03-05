@@ -103,6 +103,22 @@ def remove_key(dct, key):
   del d[key]
   return d
 
+def draw_dict(dct, textlist, poslist, fontobj, 
+  x = 0., y0 = 0.2, dy = -0.05, color = (255,255,255), translater = None):
+
+  if translater is None:
+    translate = str
+  else:
+    def translate(val):
+      return translater[val]
+      
+  wi = 0 # index
+  for key in dct:
+    textlist.append(fontobj.render(key + " :  " + translate(dct[key]), True,
+      color))
+    poslist.append((x, y0+wi*dy))
+    wi += 1
+    
 class Timer(object):  
   def start(self):
     self.start_time = time.clock()

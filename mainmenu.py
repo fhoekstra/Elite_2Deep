@@ -1,7 +1,8 @@
 import pygame as pg
 import numpy as np
 
-from utils import normscreentopixel, remove_key
+from controls import playermappings, normalnames
+from utils import normscreentopixel, remove_key, draw_dict
 
 class MainMenu(object):
   def __init__(self,scr, shiplist, shipdict, wpndict):
@@ -55,30 +56,34 @@ class MainMenu(object):
     dispinfo = pg.display.Info()
     scrw, scrh = dispinfo.current_w, dispinfo.current_h
 
-    self.screen.fill((0,0,0))
-    # resize img?
-    #AR = self.controlsimgrect.width / self.controlsimgrect.height
-    #self.controlsimg = pg.transform.scale(self.controlsimg, 
-    #                      (int(0.8*AR*scrh), int(0.8*scrh)))
-    # position img (rect)
-    self.controlsimgrect.center = normscreentopixel(np.array([[0., 0.]]), 
-                                      (0,0,0, scrw, scrh))[0]
-    self.screen.blit(self.controlsimg, self.controlsimgrect) # controls
-    self._drawtextsatpos([self.back_text], [[0.3, 0.]])  # back button
-
-    pg.display.flip()
+    nrofplayers = len(playermappings)
+    pressed = False
+    for pl in range(nrofplayers):
+      pressed = False
+      textlist = []
+      poslist = []
+      self.screen.fill((0,0,0))
+      draw_dict(playermappings[pl], textlist, poslist, self.sab, 
+        x = 0., y0 = 0.4, dy = -0.05, translater = normalnames)
+      textlist.append(self.sab.render("Player "+str(pl+1), True, 3*(255,)))
+      poslist.append((-0.2, 0.46))
+      textlist.append(self.sab.render("Space to advance", True, 3*(255,)))
+      poslist.append((-0.2, -0.46))
+      self._drawtextsatpos(textlist, poslist)
+      self._drawtextsatpos([self.back_text], [[0.3, 0.]])  # back button
+      pg.display.flip()
+      while not pressed:
+        for e in pg.event.get():
+          if e.type == pg.KEYDOWN:
+            if e.key == pg.K_b:
+              return
+            if e.key == pg.K_SPACE:
+              pressed = True
     
   def _render_wpn_props(self, wpn, textlist, poslist):
     dct = remove_key(wpn, 'build') # this should not be rendered in text
     dct = remove_key(dct, 'name') # this has already been rendered
-    x = 0.
-    y0, dy = -0.05, -0.05
-    wi = 0 # index
-    for key in dct:
-      textlist.append(self.sab.render(key + " :  " + str(dct[key]), True,
-       (255,255,255)))
-      poslist.append((x, y0+wi*dy))
-      wi += 1
+    draw_dict(dct, textlist, poslist, self.sab, x = 0., y0 = -0.05, dy = -0.05)
 
   def _show_wpn_nr(self, cur_wpn, chosen_wpn, playernr):
     textlist = [self.sab.render('PLAYER '+str(playernr), True, (255,255,255))]
@@ -131,6 +136,7 @@ class MainMenu(object):
         if j == len(wpnlist):
           j = 0
         pg.event.pump()
+      notdrawn = True
       # choose secondary
       while not secchosen:
         self._show_wpn_nr(self.wpndict[wpnlist[j]], primchosen, i+1)
@@ -183,15 +189,11 @@ class MainMenu(object):
         if keys[pg.K_q] or keys[pg.K_ESCAPE]:
           pg.quit()
         pg.event.pump()
-      while self.incontrols:
-        if notdrawn:
-          self.drawcontrols()
-          notdrawn = False
-        keys = pg.key.get_pressed()
-        if keys[pg.K_b]:
-          self.incontrols = False
-          self.inmain = True
-          notdrawn = True
+      if self.incontrols:
+        self.drawcontrols()
+        self.incontrols = False
+        self.inmain = True
+        notdrawn = True
         pg.event.pump()
       if self.inwpnselect:
         self.wpnselectloop()
