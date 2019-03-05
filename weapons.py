@@ -36,7 +36,7 @@ class WpnRailgun(object):
 
     # init
     self.mother = mother
-    self.wpn_idx = 0 # 0 for primary, 1 for secondary weapon
+    self.wpn_idx = wpn_idx # 0 for primary, 1 for secondary weapon
     self.chargetimer = None
     self.reloadtimer = None
     self.ui = RailgunElement(self, playernr=self.mother.playernr)
