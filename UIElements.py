@@ -56,7 +56,7 @@ class WpnUIElement(UIElement):
   def __init__(self, mother, playernr):
     super().__init__(mother, playernr)
     self.set_wpn_geom_props(self.mother.wpn_idx)
-
+    
   def set_wpn_geom_props(self, wpn_idx):
     self.x_out = (x_margin - wpn_ui_xspacer 
       - wpn_idx * (wpn_ui_width + wpn_ui_xspacer))
@@ -98,7 +98,7 @@ class RailgunElement(WpnUIElement):
     hbullet = dy - mdy
     sidebullet = 0.7 * (self.x_out - self.x_in)
 
-    self.bulletlist = [] # list of pointslist objects for bullets (normalized)
+    self.bulletlist = [] # list of arrays for bullet graphx (normalized coords)
     for b in range(self.mother.clipsize):
       self.bulletlist.append(np.array([
         (self.x_out, wpn_ui_top - b*dy),
@@ -110,7 +110,18 @@ class RailgunElement(WpnUIElement):
     self.color = self.mother.color
 
   def draw(self, scr, camparams):
-    for bb in range(self.mother.clip):
-      pg.draw.polygon(scr, self.color, normscreentopixel(
-        self.sgnarr*self.bulletlist[bb], camparams),
-        0)
+    if self.mother.clip > 0 or self.mother.ammo > 0:
+      for bb in range(self.mother.clip):
+        pg.draw.polygon(scr, self.color, normscreentopixel(
+          self.sgnarr*self.bulletlist[bb], camparams),
+          0)
+    else: # all out of ammo
+      crosspnts = normscreentopixel(np.array([
+        (self.x_in, wpn_ui_top),
+        (self.x_out, wpn_ui_btm),
+        (self.x_out, wpn_ui_top),
+        (self.x_in, wpn_ui_btm),
+      ])
+        , camparams)
+      pg.draw.line(scr, (255, 0, 0), crosspnts[0], crosspnts[1], 3)
+      pg.draw.line(scr, (255, 0, 0), crosspnts[2], crosspnts[3], 3)

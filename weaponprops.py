@@ -5,7 +5,7 @@ wpndict = {
     #'install': install_laser,
     'descr': "Watch out not to overheat your laser!",
     'range': 700,
-    'dps': 20,
+    'dps': 25,
     'max_heat': 100,
     'cooldown_lvl': 50, # heat level at which overheat status is disabled
   },
@@ -16,6 +16,6 @@ wpndict = {
     'range': 4_000,
     'dmg': 30,
     'clip': 5,
-    'ammo': 40,
+    'ammo': 25,
   },
 }
