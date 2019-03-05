@@ -28,8 +28,8 @@ class Spaceship(object):
     self._update_rect()
 
     # Weapons
-    self.wpnprim = WpnLaser(self)
-    self.wpnsec = WpnRailgun(self)
+    self.wpnprim = WpnLaser(self, 0)
+    self.wpnsec = WpnRailgun(self, 1)
 
     # Controls and color
     self.keymapping = playermappings[playernr-1]
@@ -39,9 +39,7 @@ class Spaceship(object):
     elif playernr == 2:
       self.color = (0,100,255)
 
-    self.hp_ui = HPElement(playernr, self)
-    self.wpnprim.ui.set(playernr)
-    self.wpnsec.ui.set(playernr)
+    self.hp_ui = HPElement(self, playernr)
     
   def set_shape(self, newshape):
     self.baseshape = centershape(newshape)

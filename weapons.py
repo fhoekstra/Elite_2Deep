@@ -12,17 +12,17 @@ Wpn means a weapon as installed on a spaceship
 Proj means a projectile ejected by the weapon after it has been fired
 """
 
-def install_laser(ship):
-  return WpnLaser(ship)
+def build_laser(ship, wpn_idx):
+  return WpnLaser(ship, wpn_idx=wpn_idx)
 
-def install_railgun(ship):
-  return WpnRailgun(ship)
+def build_railgun(ship, wpn_idx):
+  return WpnRailgun(ship, wpn_idx=wpn_idx)
 
-wpndict['Laser']['install'] = install_laser
-wpndict['Railgun']['install'] = install_railgun
+wpndict['Laser']['build'] = build_laser
+wpndict['Railgun']['build'] = build_railgun
 
 class WpnRailgun(object):
-  def __init__(self, mother):
+  def __init__(self, mother, wpn_idx=0):
 
     ####### params ########################
     self.ammo = wpndict['Railgun']['ammo']
@@ -31,10 +31,12 @@ class WpnRailgun(object):
     self.clipsize = wpndict['Railgun']['clip']
     self.clip = self.clipsize
     self.reloadtime = 3.5
+    self.color = (230,243,250)
     #######################################
 
     # init
     self.mother = mother
+    self.wpn_idx = 0 # 0 for primary, 1 for secondary weapon
     self.chargetimer = None
     self.reloadtimer = None
     self.ui = RailgunElement(self, playernr=self.mother.playernr)
@@ -58,7 +60,8 @@ class WpnRailgun(object):
 
   def _fire(self, shiplist, statlist):
     self.clip -= 1
-    railbeam = ProjRailgun(self.mother.x, self.mother.y, self.mother.phi, self.wpnrange)
+    railbeam = ProjRailgun(self, 
+      self.mother.x, self.mother.y, self.mother.phi, self.wpnrange)
     statlist.append(railbeam)
     self.mother.hit_ships(shiplist, railbeam.line_ends, self.dmg)
     self._check_for_start_reload()
@@ -85,11 +88,12 @@ class WpnRailgun(object):
       self._fire(shiplist, staticlist)
 
 class ProjRailgun(object):
-  def __init__(self, x, y, phi, wpnrange):
+  def __init__(self, mother, x, y, phi, wpnrange):
+    self.mother = mother
+    self.color = np.array(self.mother.color)
     self.line_ends = self.create_line_ends(x,y,phi, wpnrange)
     self.timer = Timer()
     self.timer.start()
-    self.color = np.array((255, 255, 255))
 
   def create_line_ends(self, x, y, phi, wpnrange):
     return np.array([
@@ -109,18 +113,19 @@ class ProjRailgun(object):
       return False # remove after this draw cycle
 
 class WpnLaser(object):
-  def __init__(self, mother):
+  def __init__(self, mother, wpn_idx=0):
     ############ params #####################
     self.range = wpndict['Laser']['range']
     self.dps = wpndict['Laser']['dps']
-    self.heatps = 10 # heat per second while firing
-    self.coolps = 5 # heat lost per second while not firing
+    self.heatps = 20 # heat per second while firing
+    self.coolps = 10 # heat lost per second while not firing
     self.cooldown_lvl = wpndict['Laser']['cooldown_lvl'] 
     # heat level at which overheat status is disabled
     self.heatcap = wpndict['Laser']['max_heat'] # maximum heat level
     ##########################################
     # init
     self.mother = mother
+    self.wpn_idx = wpn_idx # 0 for primary, 1 for secondary
     self.coords = None # will be initialized when fired
     self.hittime = None
     self.heatlvl = 0

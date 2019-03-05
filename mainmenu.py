@@ -69,7 +69,7 @@ class MainMenu(object):
     pg.display.flip()
     
   def _render_wpn_props(self, wpn, textlist, poslist):
-    dct = remove_key(wpn, 'install') # this should not be rendered in text
+    dct = remove_key(wpn, 'build') # this should not be rendered in text
     dct = remove_key(dct, 'name') # this has already been rendered
     x = 0.
     y0, dy = -0.05, -0.05
@@ -123,7 +123,7 @@ class MainMenu(object):
               notdrawn = True
             if event.key == pg.K_RETURN:
               self.shiplist[i].wpnprim = (
-                self.wpndict[wpnlist[j]]['install'](self.shiplist[i])
+                self.wpndict[wpnlist[j]]['build'](self.shiplist[i], 0)
               )
               primchosen = wpnlist[j]
         if j < 0:
@@ -144,7 +144,7 @@ class MainMenu(object):
               notdrawn = True
             if event.key == pg.K_RETURN:
               self.shiplist[i].wpnsec = (
-                self.wpndict[wpnlist[j]]['install'](self.shiplist[i])
+                self.wpndict[wpnlist[j]]['build'](self.shiplist[i], 1)
               )
               secchosen = wpnlist[j]
         if j < 0:
