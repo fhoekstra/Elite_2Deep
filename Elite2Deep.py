@@ -3,6 +3,7 @@ import numpy as np
 
 from spaceship import Spaceship
 from render.camera import Camera
+from render.background import Background
 from assets.shipshapes import talon, vector, shipdict
 import mainmenu as mm
 from weapons import wpndict
@@ -32,8 +33,10 @@ shiplist = [ship1, ship2]
 objlist = []
 staticlist = []
 
+# Rendering init
 camera = Camera()
 camera.update(shiplist)
+bg = Background(camera)
 
 # main menu loop
 menu = mm.MainMenu(screen, shiplist, shipdict, wpndict)
@@ -67,6 +70,8 @@ while running :
 
         # Clear screen   
         screen.fill(black)
+        # Fill with background
+        bg.draw(screen)
 
         for ship in shiplist:
             # Process pilot commands
