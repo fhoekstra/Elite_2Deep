@@ -2,8 +2,8 @@ import pygame as pg
 import numpy as np
 
 from spaceship import Spaceship
-from camera import Camera
-from shipshapes import talon, vector, shipdict
+from render.camera import Camera
+from assets.shipshapes import talon, vector, shipdict
 import mainmenu as mm
 from weapons import wpndict
 

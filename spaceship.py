@@ -4,8 +4,8 @@ import numpy as np
 from utils import (cxor, centershape, rotate, boundingbox, xyworldtoscreen,
  bb_on_line)
 from weapons import WpnRailgun, WpnLaser
-from UIElements import HPElement
-from controls import playermappings
+from assets.UIElements import HPElement
+from config.controls import playermappings
 
 class Spaceship(object):
   """ The class that defines a spaceship """

@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 
-from controls import playermappings, normalnames
+from config.controls import playermappings, normalnames
 from utils import normscreentopixel, remove_key, draw_dict
 
 class MainMenu(object):
@@ -17,8 +17,6 @@ class MainMenu(object):
     self.shiplist = shiplist
     self.shipdict = shipdict
     self.wpndict = wpndict
-    self.controlsimg = pg.image.load("Controls_picture.bmp")
-    self.controlsimgrect = self.controlsimg.get_rect()
 
     self.init_fonts_and_texts()
 

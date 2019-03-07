@@ -2,9 +2,9 @@ import numpy as np
 import pygame as pg
 
 from utils import bb_on_line, xyworldtoscreen, Timer
-from UIElements import LaserElement, RailgunElement
+from assets.UIElements import LaserElement, RailgunElement
 
-from weaponprops import wpndict
+from config.weaponprops import wpndict
 
 """
 Weapon objects:
