@@ -22,7 +22,7 @@ class MainMenu(object):
 
   def init_fonts_and_texts(self):
     pg.font.init()
-    self.sab = pg.font.Font('font/Sabatica-regular.ttf', 28)
+    self.sab = pg.font.SysFont('Arial', 28)
     self.play_text = self.sab.render('[P]LAY', True, (0,255,0))
     self.controls_text = self.sab.render('[C]ONTROLS', True, (255,255,255))
     self.ships_text = self.sab.render('[S]HIPS', True, (255,255,255))
@@ -30,7 +30,7 @@ class MainMenu(object):
     self.quit_text = self.sab.render('[Q]UIT [Esc]', True, (255,0,0))
     self.back_text = self.sab.render('[B]ACK', True, (180,0,0))
 
-    self.sabsmall = pg.font.Font('font/Sabatica-regular.ttf', 14)
+    self.sabsmall = pg.font.SysFont('Arial', 14)
   
   def _drawtextsatpos(self, textlist, poslist):
     dispinfo = pg.display.Info()

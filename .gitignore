@@ -5,3 +5,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Folders related to cx_Freeze build
+dist/
+build/
+#*.dll
+log.txt
