@@ -102,6 +102,9 @@ while running :
 
     pg.event.pump()
     for event in pg.event.get():
+        if event.type == pg.VIDEORESIZE:
+            screen = pg.display.set_mode((event.w, event.h),
+                                              pg.RESIZABLE)
         if event.type == pg.QUIT:
             running = False
 
