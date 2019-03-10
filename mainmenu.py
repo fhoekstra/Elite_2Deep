@@ -15,8 +15,8 @@ class MainMenu(object):
     # init
     self.screen = scr
     self.shiplist = shiplist
-    self.shipdict = shipdict
     self.wpndict = wpndict
+    self.shapedict = shipdict
 
     self.init_fonts_and_texts()
 
@@ -84,20 +84,21 @@ class MainMenu(object):
     draw_dict(dct, textlist, poslist, self.sab, x = 0., y0 = -0.05, dy = -0.05)
 
   def _show_wpn_nr(self, cur_wpn, chosen_wpn, playernr):
-    textlist = [self.sab.render('PLAYER '+str(playernr), True, (255,255,255))]
+    white = (255,255,255)
+    textlist = [self.sab.render('PLAYER '+str(playernr), True, white)]
     poslist = [(-0.3, 0.4)]
-    textlist.append(self.sab.render('<  ' + cur_wpn['name'] + '  >', True, (255,255,255)))
+    textlist.append(self.sab.render('<  ' + cur_wpn['name'] + '  >', True, white))
     poslist.append((0,0)) # position of wpn name
     self._render_wpn_props(cur_wpn, textlist, poslist)
-    textlist.append(self.sab.render('ENTER to select', True, (255,255,255)))
+    textlist.append(self.sab.render('ENTER to select', True, white))
     poslist.append((0, -0.3))
     if chosen_wpn is not None:
-      textlist.append(self.sab.render('PRIMARY: '+chosen_wpn, True, (255,255,255)))
+      textlist.append(self.sab.render('PRIMARY: '+chosen_wpn, True, white))
       poslist.append((-0.3, 0.3))
-      textlist.append(self.sab.render('CHOOSE SECONDARY:',True, (255,255,255)))
+      textlist.append(self.sab.render('CHOOSE SECONDARY:',True, white))
       poslist.append((0., 0.3))
     else:
-      textlist.append(self.sab.render('CHOOSE PRIMARY:',True, (255,255,255)))
+      textlist.append(self.sab.render('CHOOSE PRIMARY:',True, white))
       poslist.append((0., 0.3))
 
     self.screen.fill((0,0,0))
@@ -157,8 +158,60 @@ class MainMenu(object):
           j = 0
         pg.event.pump()
 
+  def _render_shipshape(self, shipshape, playership=None):
+    dispinfo = pg.display.Info()
+    scrw, scrh = dispinfo.current_w, dispinfo.current_h
+
+    if playership is None:
+      color = (255,255,255)
+    else:
+      color = playership.color
+
+    nshipshape = 0.005*np.array(shipshape)
+    shapetodraw = normscreentopixel(nshipshape, (0,0,0,scrw, scrh))
+    pg.draw.polygon(self.screen, color, shapetodraw, 4)
+
+  def _show_shape(self, curshape, playernr):
+    self.screen.fill((0,0,0))
+    textlist = [self.sab.render('PLAYER '+str(playernr), True, (255,255,255))]
+    poslist = [(-0.3, 0.4)]
+    textlist.append(self.sab.render('<  ' + curshape['name'] + '  >', True, (255,255,255)))
+    poslist.append((0,0)) # position of wpn name
+    self._render_shipshape(curshape['shape'], playership = self.shiplist[playernr-1])
+    textlist.append(self.sab.render('ENTER to select', True, (255,255,255)))
+    poslist.append((0, -0.3))
+
+    self._drawtextsatpos(textlist, poslist)
+    pg.display.flip()
+
   def shipselectloop(self):
-    return
+    shapelist = list(self.shapedict)
+    notdrawn = True
+    j = 0
+    for i in range(len(self.shiplist)):
+      shapechosen = False
+      # choose primary
+      while not shapechosen:
+        if notdrawn:
+          self._show_shape(self.shapedict[shapelist[j]], i+1)
+          notdrawn = False
+        for event in pg.event.get():
+          if event.type == pg.KEYDOWN:
+            if event.key == pg.K_LEFT:
+              j -= 1
+              notdrawn = True
+            if event.key == pg.K_RIGHT:
+              j += 1
+              notdrawn = True
+            if event.key == pg.K_RETURN:
+              self.shiplist[i].set_shape(self.shapedict[shapelist[j]]['shape'])
+              shapechosen = True
+        if j < 0:
+          j = len(shapelist) + j # j is negative
+        if j == len(shapelist):
+          j = 0
+        pg.event.pump()
+      notdrawn = True
 
   def menuloops(self):
     while not self.play:
