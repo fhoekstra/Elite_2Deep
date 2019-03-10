@@ -1,14 +1,17 @@
 import pygame as pg
 import numpy as np
 
+from utils import xyworldtoscreen
+
 class Background(object):
-  def __init__(self, camera, stardensity=1e-4, parallax = 0.2, blocksize = 100):
+  def __init__(self, camera, stardensity=20./9e6, parallax = 0.2, blocksize = 3000):
     self.cam = camera
     self.blocks = [] # a list of blocks of blocksize^2 pixels that has been filled
-    self.parallax = parallax
+    #self.parallax = parallax
     self.bsize = blocksize
 
-    self.Nstars = int(stardensity * self.bsize**2) # stardensity stars per pixel, N stars per block
+    # stardensity stars per pixel, N stars per block, minimum 1
+    self.Nstars = int((stardensity * self.bsize**2) + 1)
     
   def populate_stars(self, block):
     """
@@ -38,30 +41,30 @@ class Background(object):
   
   def draw(self, scr):
     camparams = self.cam.getparams()
-    _, panx, pany, _, _ = camparams
-    panarr = (self.parallax*np.array([panx, pany])).astype(int)
     self._checkboxes(camparams)
     
     for block in self.blocks:
+      shapetodraw = (xyworldtoscreen(block['pos'], camparams)+0.5).astype(int)
       for j in range(self.Nstars):
-        scr.set_at(block['pos'][j] - panarr, block['col'][j]) # takes too long
+        scr.set_at(shapetodraw[j], block['col'][j]) # takes too long?
 
   def _checkboxes(self, camparams):
     """
-    Checks which self.bsizexself.bsize boxes need to be rendered, given camparams.
-    Returns a dict:
-    'rendernew' : bool, whether new boxes need to be rendered
-    'blocks' : list of block indices
+    Checks which self.bsizexself.bsize boxes need to be rendered,
+    given camparams.
+    Creates and removes blocks in self.blocklist if necessary.
     """
-    _ , panx, pany, width, height = camparams
+    scale , panx, pany, width, height = camparams
     #import pdb; pdb.set_trace()
-    xminidx = int(self.parallax * panx/self.bsize)
-    yminidx = int(self.parallax*pany/self.bsize)
+    xminidx = int((panx - scale*width) / self.bsize)
+    yminidx = int((pany - scale*height) /self.bsize)
+    xmaxidx = int((panx + scale*width) / self.bsize)
+    ymaxidx = int((pany + scale*height) / self.bsize)
     neededblocks = []
 
     # create blocks
-    for xidx in range(xminidx-1, xminidx+int(width/self.bsize)+1):
-      for yidx in range(yminidx-1, yminidx+int(height/self.bsize)+2):
+    for xidx in range(xminidx-1, xmaxidx+1):
+      for yidx in range(yminidx-1, ymaxidx+1):
         neededblocks.append((xidx, yidx))
         if not self._inblocks((xidx, yidx)):
           self.populate_stars((xidx, yidx))
