@@ -118,7 +118,29 @@ def draw_dict(dct, textlist, poslist, fontobj,
       color))
     poslist.append((x, y0+wi*dy))
     wi += 1
-    
+
+def collide_objects(objlist):
+  """
+  All objects in list must have a collide(otherobj) method.
+  All objects in list must have x,y,vx,vy,phi,vphi,hp,rect props.
+  collide method is called on both objects that collide. In principle, they
+  only affect the self, unless they explicitly cause damage to the other,
+  more than the other deals itself by default on a collision.
+  """
+  rectlist = [obj.rect for obj in objlist]
+  vnewlist = []
+  #import pdb; pdb.set_trace()
+  # Iterate through all objects. Test them for collision with all others
+  for i, iobj in enumerate(objlist):
+    vnewlist.append( (iobj.vx, iobj.vy) )
+    for j, jobj in enumerate(objlist):
+      if iobj != jobj:
+        if iobj.rect.colliderect(jobj.rect):
+          vnewlist[i] = iobj.collide(jobj) # we call this method on both objs
+          # collision with self is handled in this method
+  for i, iobj in enumerate(objlist):
+    iobj.vx, iobj.vy = vnewlist[i]
+
 class Timer(object):  
   def start(self):
     self.start_time = time.clock()

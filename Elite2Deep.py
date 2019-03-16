@@ -7,6 +7,7 @@ from render.background import Background
 from assets.shipshapes import talon, vector, shipdict
 import mainmenu as mm
 from weapons import wpndict
+from utils import collide_objects
 
 # Colours
 black = (0, 0, 0) # RGB code (0-255)
@@ -83,12 +84,15 @@ while running :
             ship.update_position(dt)
 
             # Draw new frame here
-            ship.draw(screen, camera.getparams())
+            if not ship.draw(screen, camera.getparams()):
+                shiplist.pop(shiplist.index(ship))
         
         for obj in objlist:
             obj.update_velocities(dt)
             obj.update_position(dt)
             obj.draw(screen, camera.getparams())
+
+        collide_objects(shiplist + objlist)
         for stat in staticlist:
             if not stat.draw(screen, camera.getparams()):
                 staticlist.pop(staticlist.index(stat))

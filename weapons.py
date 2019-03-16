@@ -117,8 +117,8 @@ class WpnLaser(object):
     ############ params #####################
     self.range = wpndict['Laser']['range']
     self.dps = wpndict['Laser']['dps']
-    self.heatps = 20 # heat per second while firing
-    self.coolps = 10 # heat lost per second while not firing
+    self.heatps = 100 # heat per second while firing
+    self.coolps = 20 # heat lost per second while not firing
     self.cooldown_lvl = wpndict['Laser']['cooldown_lvl'] 
     # heat level at which overheat status is disabled
     self.heatcap = wpndict['Laser']['max_heat'] # maximum heat level
