@@ -5,7 +5,10 @@ from config.controls import playermappings, normalnames
 from utils import normscreentopixel, remove_key, draw_dict
 
 class MainMenu(object):
-  def __init__(self,scr, shiplist, shipdict, wpndict):
+  def __init__(self, game, scr, shiplist, shipdict, wpndict, screenres):
+    # pygame video system
+    pg.init()
+    pg.display.set_mode(screenres, pg.RESIZABLE)
     # status bools
     self.inmain = True
     self.incontrols = False
@@ -13,6 +16,7 @@ class MainMenu(object):
     self.inwpnselect = False
     self.play = False
     # init
+    self.game = game
     self.screen = scr
     self.shiplist = shiplist
     self.wpndict = wpndict
@@ -258,5 +262,7 @@ class MainMenu(object):
         self.inmain = True
         notdrawn = True
         pg.event.pump()
-
+    
+    if self.play:
+      self.game.rungame()
       
