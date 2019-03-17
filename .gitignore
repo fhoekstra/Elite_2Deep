@@ -5,6 +5,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.dll
 dist/
 build/
-*.dll
+log.txt
+
