@@ -99,8 +99,8 @@ class Spaceship(KineticObject):
     self.vmax = 1000
     self.vphimax = 20
     self.thrusters = 200
-    self.baseshape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
-    self.baseshape = centershape(self.baseshape)
+    self.shape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
+    self.shape = centershape(self.shape)
     self.rect = None # Collision
     self._update_rect()
 
@@ -119,13 +119,12 @@ class Spaceship(KineticObject):
     self.hp_ui = HPElement(self, playernr)
     
   def set_shape(self, newshape):
-    self.baseshape = centershape(newshape)
-    self._update_rect()
+    self.shape = centershape(newshape)
 
   def draw(self, surf, camparams):
     if self.hp < 0:
       return False # this ship is dead
-    shapetodraw = rotate(self.baseshape, self.phi) # rotate shape to phi
+    shapetodraw = rotate(self.shape, self.phi) # rotate shape to phi
     shapetodraw = shapetodraw + np.array([self.x,self.y]) # add physics position
     shapetodraw = xyworldtoscreen(shapetodraw, camparams)
     pg.draw.polygon(surf, self.color, shapetodraw, 3)

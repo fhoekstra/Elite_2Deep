@@ -5,39 +5,38 @@ from spaceship import Spaceship
 from render.camera import Camera
 from render.background import Background
 from assets.shipshapes import talon, vector, shipdict
+from config.scenarios import scenarios
 import mainmenu as mm
 from weapons import wpndict
-from utils import collide_objects
+from utils import collide_objects, setpropsfromdict
 
 class Elite2Deep(object):
     def __init__(self, screen):
         self.screen = screen
+        self.playernr = 2
+        self.chosen_scene = 0
 
-        self.set_defaults(2)
+        self.scenes = scenarios
+        self.set_scene(self.playernr, self.chosen_scene)
 
         # Rendering init
         self.camera = Camera()
         self.camera.update(self.shiplist)
         self.background = Background(self.camera)
 
-    def set_defaults(self, playernr):
-        if playernr == 2:
-            ship1 = Spaceship(playernr=1)
-            ship1.x, ship1.y = (800,0)
-            ship2 = Spaceship(playernr=2)
-            ship2.x, ship2.y = (-800,0)
+    def set_scene(self, playernr, j):
+        self.shiplist = []
+        pscenes = self.scenes[playernr]
+        pnr = 1
+        for shipprops in pscenes[j]:
+            ship = Spaceship(playernr = pnr)
+            setpropsfromdict(ship, shipprops)
+            self.shiplist.append(ship)
+            pnr += 1
 
-            ship1.set_shape(talon)
-            ship2.set_shape(vector)
-
-            # list of player-controlled objects
-            self.shiplist = [ship1, ship2]
-
-            # list of non-camera focus objects
-            self.objlist = []
-            self.staticlist = []
-        else:
-            return NotImplementedError("Implement scenarios")
+        # list of non-camera focus objects
+        self.objlist = []
+        self.staticlist = []
 
     def run(self):
         self.runmenu()
@@ -51,7 +50,7 @@ class Elite2Deep(object):
         menu.menuloops()
 
     def resetgame(self):
-        self.set_defaults(2)
+        self.set_scene(self.playernr, self.chosen_scene)
         self.rungame()
 
     def rungame(self):

@@ -62,13 +62,11 @@ def normscreentopixel(pointslist, camparams):
   """
   _, _, _, dispw, disph = camparams
 
-  AR = dispw / disph # aspect ratio
-
-  xn = pointslist[:,0]
-  yn = pointslist[:,1]
-
-  y = 0.5*disph - disph*yn
-  x = 0.5*dispw + dispw*xn/AR
+  #AR = dispw / disph # aspect ratio
+  #xn = pointslist[:,0]
+  #yn = pointslist[:,1]
+  #y = 0.5*disph - disph*yn
+  #x = 0.5*dispw + dispw*xn/AR
   shapetodraw = np.array([dispw, -disph])*pointslist
   shapetodraw = shapetodraw + 0.5 * np.array([dispw, disph])
   return shapetodraw
@@ -127,19 +125,22 @@ def collide_objects(objlist):
   only affect the self, unless they explicitly cause damage to the other,
   more than the other deals itself by default on a collision.
   """
-  rectlist = [obj.rect for obj in objlist]
   vnewlist = []
   #import pdb; pdb.set_trace()
   # Iterate through all objects. Test them for collision with all others
   for i, iobj in enumerate(objlist):
     vnewlist.append( (iobj.vx, iobj.vy) )
-    for j, jobj in enumerate(objlist):
+    for jobj in objlist:
       if iobj != jobj:
         if iobj.rect.colliderect(jobj.rect):
           vnewlist[i] = iobj.collide(jobj) # we call this method on both objs
           # collision with self is handled in this method
   for i, iobj in enumerate(objlist):
     iobj.vx, iobj.vy = vnewlist[i]
+
+def setpropsfromdict(inst, dct):
+  for key in dct:
+    setattr(inst, key, dct[key])
 
 class Timer(object):  
   def start(self):

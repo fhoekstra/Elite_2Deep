@@ -14,6 +14,7 @@ class MainMenu(object):
     self.incontrols = False
     self.inshipselect = False
     self.inwpnselect = False
+    self.inscenes = False
     self.play = False
     self.reset = False
     # init
@@ -33,6 +34,7 @@ class MainMenu(object):
     self.controls_text = self.sab.render('[C]ONTROLS', True, (255,255,255))
     self.ships_text = self.sab.render('[S]HIPS', True, (255,255,255))
     self.weapons_text = self.sab.render('[W]EAPONS', True, (255,10,10))
+    self.scenarios_text = self.sab.render('SC[E]NARIOS', True, (255,255,255))
     self.quit_text = self.sab.render('[Q]UIT [Esc]', True, (255,0,0))
     self.back_text = self.sab.render('[B]ACK', True, (180,0,0))
 
@@ -50,8 +52,9 @@ class MainMenu(object):
 
   def drawmenu(self):
     textlist = [self.play_text, self.reset_text, self.controls_text, self.ships_text,
-               self.weapons_text, self.quit_text]
-    textpositions = [(0., 0.3), (0., 0.45), (0., 0.1), (0., -0.1), (0., -0.3), (0.3, 0.4)]
+               self.weapons_text, self.scenarios_text, self.quit_text]
+    textpositions = [(0., 0.3), (0., 0.2), (0., 0.1), (0., -0.1),
+      (0., -0.3), (0., -0.2), (0.3, 0.4)]
     self.screen.fill((0,0,0))
     self._drawtextsatpos(textlist, textpositions)
     pg.display.flip()
@@ -77,12 +80,14 @@ class MainMenu(object):
       self._drawtextsatpos([self.back_text], [[0.3, 0.]])  # back button
       pg.display.flip()
       while not pressed:
-        for e in pg.event.get():
+        events = pg.event.get()
+        for e in events:
           if e.type == pg.KEYDOWN:
             if e.key == pg.K_b:
               return
             if e.key == pg.K_SPACE:
               pressed = True
+        self.checkforpgevents(events = events)
     
   def _render_wpn_props(self, wpn, textlist, poslist):
     dct = remove_key(wpn, 'build') # this should not be rendered in text
@@ -111,6 +116,46 @@ class MainMenu(object):
     self._drawtextsatpos(textlist, poslist)
     pg.display.flip()
 
+  def choosescenes(self, playernr):
+    scenelist = self.game.scenes[playernr]
+    notdrawn = True
+    chosen = False
+    j = 0
+    while not chosen:
+      if notdrawn:
+        white = (255,255,255)
+        textlist = [self.sab.render('CHOOSE SCENARIO FOR ' + str(playernr) 
+          + ' PLAYERS', True, white)]
+        poslist = [(0., 0.4)]
+        textlist.append(self.sab.render('<  NR ' + str(j) + '  >', True, white))
+        poslist.append((0,0))
+        textlist.append(self.sab.render('ENTER to select', True, white))
+        poslist.append((0, -0.3))
+
+        self.screen.fill((0,0,0))
+        self._drawtextsatpos(textlist, poslist)
+        pg.display.flip()
+      events = pg.event.get()
+      for event in events:
+        if event.type == pg.KEYDOWN:
+          if event.key == pg.K_LEFT:
+            j -= 1
+            notdrawn = True
+          if event.key == pg.K_RIGHT:
+            j += 1
+            notdrawn = True
+          if event.key == pg.K_RETURN:
+            self.game.chosen_scene = j
+            self.game.set_scene(playernr, j)
+            chosen = True
+      self.checkforpgevents(events=events)
+      if j < 0:
+        j = len(scenelist) + j # j is negative
+      if j == len(scenelist):
+        j = 0
+      pg.event.pump()
+
+
   def wpnselectloop(self):
     wpnlist = list(self.wpndict)
     notdrawn = True
@@ -123,7 +168,8 @@ class MainMenu(object):
         if notdrawn:
           self._show_wpn_nr(self.wpndict[wpnlist[j]], None, i+1)
           notdrawn = False
-        for event in pg.event.get():
+        events = pg.event.get()
+        for event in events:
           if event.type == pg.KEYDOWN:
             if event.key == pg.K_LEFT:
               j -= 1
@@ -136,6 +182,7 @@ class MainMenu(object):
                 self.wpndict[wpnlist[j]]['build'](self.shiplist[i], 0)
               )
               primchosen = wpnlist[j]
+        self.checkforpgevents(events=events)
         if j < 0:
           j = len(wpnlist) + j # j is negative
         if j == len(wpnlist):
@@ -145,7 +192,8 @@ class MainMenu(object):
       # choose secondary
       while not secchosen:
         self._show_wpn_nr(self.wpndict[wpnlist[j]], primchosen, i+1)
-        for event in pg.event.get():
+        events = pg.event.get()
+        for event in events:
           if event.type == pg.KEYDOWN:
             if event.key == pg.K_LEFT:
               j -= 1
@@ -158,6 +206,7 @@ class MainMenu(object):
                 self.wpndict[wpnlist[j]]['build'](self.shiplist[i], 1)
               )
               secchosen = wpnlist[j]
+        self.checkforpgevents(events=events)
         if j < 0:
           j = len(wpnlist) + j # j is negative
         if j == len(wpnlist):
@@ -201,7 +250,8 @@ class MainMenu(object):
         if notdrawn:
           self._show_shape(self.shapedict[shapelist[j]], i+1)
           notdrawn = False
-        for event in pg.event.get():
+        events = pg.event.get()
+        for event in events:
           if event.type == pg.KEYDOWN:
             if event.key == pg.K_LEFT:
               j -= 1
@@ -212,6 +262,7 @@ class MainMenu(object):
             if event.key == pg.K_RETURN:
               self.shiplist[i].set_shape(self.shapedict[shapelist[j]]['shape'])
               shapechosen = True
+        self.checkforpgevents(events=events)
         if j < 0:
           j = len(shapelist) + j # j is negative
         if j == len(shapelist):
@@ -231,6 +282,7 @@ class MainMenu(object):
           self.play = True
           self.inmain = False
           self.reset = True
+          notdrawn = True
         if keys[pg.K_p]:
           self.play = True
           self.inmain = False
@@ -247,27 +299,42 @@ class MainMenu(object):
           self.inwpnselect = True
           self.inmain = False
           notdrawn = True
+        if keys[pg.K_e]:
+          self.inscenes = True
+          self.inmain = False
+          notdrawn = True
         if keys[pg.K_q] or keys[pg.K_ESCAPE]:
           pg.quit()
         pg.event.pump()
+        self.checkforpgevents()
       if self.incontrols:
         self.drawcontrols()
         self.incontrols = False
         self.inmain = True
         notdrawn = True
         pg.event.pump()
+        self.checkforpgevents()
       if self.inwpnselect:
         self.wpnselectloop()
         self.inwpnselect = False
         self.inmain = True
         notdrawn = True
         pg.event.pump()
+        self.checkforpgevents()
+      if self.inscenes:
+        self.choosescenes(self.game.playernr)
+        self.inscenes = False
+        self.inmain = True
+        notdrawn = True
+        pg.event.pump()
+        self.checkforpgevents()
       while self.inshipselect:
         self.shipselectloop()
         self.inshipselect = False
         self.inmain = True
         notdrawn = True
         pg.event.pump()
+        self.checkforpgevents()
     
     if self.play:
       if self.reset:
@@ -275,3 +342,17 @@ class MainMenu(object):
       else:
         self.game.rungame()
       
+  def checkforpgevents(self, other_checks=None, events=None):
+    if other_checks is None:
+      def do_nothing(x):
+        pass
+      other_checks = do_nothing
+    if events is None:
+      events = pg.event.get()
+    for event in events:
+      if event.type == pg.VIDEORESIZE:
+          self.screen = pg.display.set_mode((event.w, event.h),
+                                          pg.RESIZABLE)
+      if event.type == pg.QUIT:
+          self.game.quit()
+      other_checks(event)
