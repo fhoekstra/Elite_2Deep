@@ -1,10 +1,11 @@
 import numpy as np
 import pygame as pg
 
-from utils import bb_on_line, xyworldtoscreen, Timer, setpropsfromdict
+from utils import bb_on_line, xyworldtoscreen, Timer, setpropsfromdict, rotate
 from assets.UIElements import LaserElement, RailgunElement
 
 from config.weaponprops import wpndict
+from kinobject import KineticObject
 
 """
 Weapon objects:
@@ -18,8 +19,12 @@ def build_laser(ship, wpn_idx):
 def build_railgun(ship, wpn_idx):
   return WpnRailgun(ship, wpn_idx=wpn_idx)
 
+def build_kinetic_rocket(ship, wpn_idx):
+  return WpnKineticRocket(ship, wpn_idx=wpn_idx)
+
 wpndict['Laser']['build'] = build_laser
 wpndict['Railgun']['build'] = build_railgun
+wpndict['Kinetic Rocket']['build'] = build_kinetic_rocket
 
 class WpnRailgun(object):
   def __init__(self, mother, wpn_idx=0):
@@ -215,3 +220,104 @@ class ProjLaser(object):
     pg.draw.line(surf, self.outercolor, screenshape[0], screenshape[1], 4)
     pg.draw.line(surf, self.innercolor, screenshape[0], screenshape[1], 2)
     return False # remove after this draw cycle
+
+class WpnKineticRocket(object):
+  def __init__(self, mother, wpn_idx=0):
+    
+    self.ammo = 6
+    self.rocketmass = 1
+    self.rockethp = 4
+    self.clipsize = 1
+    self.reloadtime = 10.
+    self.flighttime = 10.
+    self.armtime = 0.5
+    self.speed = 500
+    self.induced_spin = 1_000
+    self.color = (0,243,250)
+
+    setpropsfromdict(self, wpndict['Kinetic Rocket']) # import from config
+    self.clip = self.clipsize
+
+    # init
+    self.mother = mother
+    self.wpn_idx = wpn_idx # 0 for primary, 1 for secondary weapon
+    self.reloadtimer = None
+    self.ui = RailgunElement(self, playernr=self.mother.playernr)
+
+  def _fire(self, shiplist, objlist, statlist):
+    self.clip -= 1
+    rocket = ProjKineticRocket(self, 
+      self.mother.x, self.mother.y, self.mother.phi)
+    objlist.append(rocket)
+    dvmother = 0.2 * self.mother.m / self.rocketmass * self.speed
+    self.mother.vx -= dvmother * np.sin(self.mother.phi)
+    self.mother.vy -= dvmother * np.cos(self.mother.phi)
+    self._check_for_start_reload()
+    
+  def _check_for_start_reload(self):
+    if self.clip < 1 and self.ammo > 0:
+      self.reloadtimer = Timer()
+      self.reloadtimer.start()
+  
+  def _check_if_reloading_and_done(self):
+    if self.reloadtimer is not None:
+      if self.reloadtimer.get() > self.reloadtime:
+        if self.ammo >= self.clipsize:
+          self.ammo -= self.clipsize
+          self.clip = self.clipsize
+        else:
+          self.clip = self.ammo
+          self.ammo = 0
+        self.reloadtimer = None
+
+  def handle_keypress(self, key_pressed, shiplist, staticlist, objlist):
+    self._check_if_reloading_and_done()
+    if self.clip > 0 and key_pressed:
+      self._fire(shiplist, objlist, staticlist)
+
+class ProjKineticRocket(KineticObject):
+  def __init__(self, launcher, x, y, phi):
+    super().__init__()
+    self.launcher = launcher
+    self.x = x
+    self.y = y
+    self.phi = phi
+    self.hp = self.launcher.rockethp
+    self.m = 1e-34
+    self.col_elastic = 1
+    self.flighttime = self.launcher.flighttime
+    self.armtime = self.launcher.armtime
+    self.vx = self.launcher.mother.vx + self.launcher.speed * np.sin(self.phi)
+    self.vy = self.launcher.mother.vy + self.launcher.speed * np.cos(self.phi)
+    self.spin = self.launcher.induced_spin
+    self.color = self.launcher.color
+
+    self.timer = Timer()
+    self.timer.start()
+
+  def collide(self, other, k = None):
+    if self.timer.get() > self.armtime:
+      self.col_elastic = 0.9
+      self.m = self.launcher.rocketmass
+      other.vphi += (np.random.rand() - 0.5) * self.launcher.induced_spin
+      #self.hp = -1
+      if k is None:
+        k = self.col_elastic
+      return super().collide(other, k=k)
+    else:
+      return self.vx, self.vy
+
+  def draw(self, surf, camparams):
+    if self.timer.get() > self.armtime - 10e-3:
+      self.col_elastic = 0.9
+      self.m = self.launcher.rocketmass
+    if self.timer.get() > self.flighttime or self.hp < 0:
+      return False # this object is dead
+    else:
+      shapetodraw = rotate(self.shape, self.phi) # rotate shape to phi
+      shapetodraw = shapetodraw + np.array([self.x,self.y]) # add physics position
+      shapetodraw = xyworldtoscreen(shapetodraw, camparams)
+      pg.draw.polygon(surf, self.color, shapetodraw, 0)
+      return True # keep after this draw cycle
+  
+

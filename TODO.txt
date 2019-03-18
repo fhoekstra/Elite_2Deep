@@ -10,6 +10,7 @@ visual:
 x >< object draw with world coords < nope, leave in utils functions for now
 X >UI element draw with normalized screen coords 
 X >stars background
+ >> stars as circles with world coordinate defined radius
 X > main menu
 X > weapon select
 X > weapon UI element displacement -> fix bug with no ammo rails always top left
@@ -27,8 +28,9 @@ x heat
 x ship-ship collisions
  weapon impacts mass and L
  mass and thrusters determine vmax
- rockets (kinetic)
+x rockets (kinetic)
  bombs
  ram booster pack
- scenarios, reset
+x scenarios, reset
+x use max elasticity constant of objects for both in collision
 

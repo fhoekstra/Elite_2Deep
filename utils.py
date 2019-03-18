@@ -131,10 +131,10 @@ def collide_objects(objlist):
   for i, iobj in enumerate(objlist):
     vnewlist.append( (iobj.vx, iobj.vy) )
     for jobj in objlist:
-      if iobj != jobj:
-        if iobj.rect.colliderect(jobj.rect):
-          vnewlist[i] = iobj.collide(jobj) # we call this method on both objs
-          # collision with self is handled in this method
+      if iobj.rect.colliderect(jobj.rect) and iobj != jobj:
+        vnewlist[i] = iobj.collide(jobj, # we call this method on both objs
+          k = max((iobj.col_elastic, jobj.col_elastic))
+        ) # collision with self is handled in this method
   for i, iobj in enumerate(objlist):
     iobj.vx, iobj.vy = vnewlist[i]
 

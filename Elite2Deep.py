@@ -89,7 +89,7 @@ class Elite2Deep(object):
 
                 for ship in self.shiplist:
                     # Process pilot commands
-                    ship.do_key_actions(keys, self.shiplist, self.screen, self.objlist, self.staticlist)
+                    ship.do_key_actions(keys, self.shiplist+self.objlist, self.screen, self.objlist, self.staticlist)
                     # Calculate non-thrust forces
                     
                     # Numerical integration
@@ -103,8 +103,8 @@ class Elite2Deep(object):
                 for obj in self.objlist:
                     obj.update_velocities(dt)
                     obj.update_position(dt)
-                    obj.draw(self.screen, self.camera.getparams())
-
+                    if not obj.draw(self.screen, self.camera.getparams()):
+                        self.objlist.pop(self.objlist.index(obj))
                 collide_objects(self.shiplist + self.objlist)
                 for stat in self.staticlist:
                     if not stat.draw(self.screen, self.camera.getparams()):
