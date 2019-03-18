@@ -1,7 +1,7 @@
 import numpy as np
 import pygame as pg
 
-from utils import bb_on_line, xyworldtoscreen, Timer
+from utils import bb_on_line, xyworldtoscreen, Timer, setpropsfromdict
 from assets.UIElements import LaserElement, RailgunElement
 
 from config.weaponprops import wpndict
@@ -24,15 +24,15 @@ wpndict['Railgun']['build'] = build_railgun
 class WpnRailgun(object):
   def __init__(self, mother, wpn_idx=0):
 
-    ####### params ########################
-    self.ammo = wpndict['Railgun']['ammo']
-    self.wpnrange = wpndict['Railgun']['range']
-    self.dmg = wpndict['Railgun']['dmg']
-    self.clipsize = wpndict['Railgun']['clip']
-    self.clip = self.clipsize
+    self.ammo = 25
+    self.range = 7000
+    self.dmg = 15
+    self.clipsize = 5
     self.reloadtime = 3.5
     self.color = (230,243,250)
-    #######################################
+    propscfg = wpndict['Railgun']
+    setpropsfromdict(self, propscfg) # import from config
+    self.clip = self.clipsize
 
     # init
     self.mother = mother
@@ -61,7 +61,7 @@ class WpnRailgun(object):
   def _fire(self, shiplist, statlist):
     self.clip -= 1
     railbeam = ProjRailgun(self, 
-      self.mother.x, self.mother.y, self.mother.phi, self.wpnrange)
+      self.mother.x, self.mother.y, self.mother.phi, self.range)
     statlist.append(railbeam)
     self.mother.hit_ships(shiplist, railbeam.line_ends, self.dmg)
     self._check_for_start_reload()
@@ -104,25 +104,27 @@ class ProjRailgun(object):
     ])
     
   def draw(self, surf, camparams):
-    if self.timer.get() < 10.:
+    if self.timer.get() < 4.:
       screenshape = xyworldtoscreen(self.line_ends, camparams)
-      pg.draw.line(surf, np.exp(-self.timer.get()/7.)*self.color,
-                   screenshape[0], screenshape[1], 2)
+      pg.draw.line(surf, 
+        (0.6*np.exp(-self.timer.get() / .1) + .4*np.exp(-self.timer.get() / 4.))
+          * self.color,
+        screenshape[0], screenshape[1], 2)
       return True # keep after this draw cycle
     else:
       return False # remove after this draw cycle
 
 class WpnLaser(object):
   def __init__(self, mother, wpn_idx=0):
-    ############ params #####################
-    self.range = wpndict['Laser']['range']
-    self.dps = wpndict['Laser']['dps']
+
+    self.range = 700
+    self.dps = 30
     self.heatps = 100 # heat per second while firing
     self.coolps = 20 # heat lost per second while not firing
-    self.cooldown_lvl = wpndict['Laser']['cooldown_lvl'] 
-    # heat level at which overheat status is disabled
-    self.heatcap = wpndict['Laser']['max_heat'] # maximum heat level
-    ##########################################
+    self.cooldown_lvl = 50
+    self.heatcap = 100 # maximum heat level
+    setpropsfromdict(self, wpndict['Laser']) # import from config
+
     # init
     self.mother = mother
     self.wpn_idx = wpn_idx # 0 for primary, 1 for secondary
