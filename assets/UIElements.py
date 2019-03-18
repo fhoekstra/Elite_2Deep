@@ -116,7 +116,9 @@ class RailgunElement(WpnUIElement):
           self.sgnarr*self.bulletlist[bb], camparams),
           0)
     else: # all out of ammo
-      crosspnts = normscreentopixel(np.array([
+      crosspnts = normscreentopixel(
+        self.sgnarr *
+        np.array([
         (self.x_in, wpn_ui_top),
         (self.x_out, wpn_ui_btm),
         (self.x_out, wpn_ui_top),
