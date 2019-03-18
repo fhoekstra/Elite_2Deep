@@ -8,7 +8,7 @@ from assets.shipshapes import talon, vector, shipdict
 from config.scenarios import scenarios
 import mainmenu as mm
 from weapons import wpndict
-from utils import collide_objects, setpropsfromdict
+from utils import collide_objects, setpropsfromdict, enforce_max_range
 
 class Elite2Deep(object):
     def __init__(self, screen):
@@ -95,6 +95,7 @@ class Elite2Deep(object):
                     # Numerical integration
                     ship.update_velocities(dt)
                     ship.update_position(dt)
+                    ship.reset_forces()
 
                     # Draw new frame here
                     if not ship.draw(self.screen, self.camera.getparams()):
@@ -103,9 +104,11 @@ class Elite2Deep(object):
                 for obj in self.objlist:
                     obj.update_velocities(dt)
                     obj.update_position(dt)
+                    obj.reset_forces()
                     if not obj.draw(self.screen, self.camera.getparams()):
                         self.objlist.pop(self.objlist.index(obj))
                 collide_objects(self.shiplist + self.objlist)
+                enforce_max_range(self.shiplist)
                 for stat in self.staticlist:
                     if not stat.draw(self.screen, self.camera.getparams()):
                         self.staticlist.pop(self.staticlist.index(stat))

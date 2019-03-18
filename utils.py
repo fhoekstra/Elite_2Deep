@@ -142,6 +142,22 @@ def collide_objects(objlist):
   for i, iobj in enumerate(objlist):
     iobj.vx, iobj.vy = vnewlist[i]
 
+def enforce_max_range(shiplist, maxr = 7_000, strength = 1e-3 ):
+  allx = [ship.x for ship in shiplist]
+  ally = [ship.y for ship in shiplist]
+  xmax = max(allx)
+  ymax = max(ally)
+  xmin = min(allx)
+  ymin = min(ally)
+
+  if ((xmax - xmin)**2 + (ymax - ymin)**2) > maxr**2:
+    xavg = sum(allx) / len(shiplist)
+    yavg = sum(ally) / len(shiplist)
+    for ship in shiplist:
+      ship.vx += strength*(xavg - ship.x)#/np.abs(xavg - ship.x) # push back to center
+      ship.vy += strength*(yavg - ship.y)#/np.abs(yavg - ship.y)
+      ship.vphi = 0.999*ship.vphi # also stop rotation smoothly
+
 def setpropsfromdict(inst, dct):
   for key in dct:
     setattr(inst, key, dct[key])

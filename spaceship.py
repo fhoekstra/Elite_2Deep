@@ -106,11 +106,10 @@ class Spaceship(KineticObject):
     if cxor(keys_pressed[self.keymapping['leftrot']], 
           keys_pressed[self.keymapping['rightrot']]):
       if keys_pressed[self.keymapping['leftrot']]:
-        self.fn = +self.thrusters
+        self.fn += self.thrusters
       elif keys_pressed[self.keymapping['rightrot']]:
-        self.fn = -self.thrusters
-    else:
-      self.fn = 0
+        self.fn -= self.thrusters
+
     # translation forward-backward thrusters
     if cxor(keys_pressed[self.keymapping['thrustfwd']], 
           keys_pressed[self.keymapping['thrustbwd']]):
@@ -137,8 +136,9 @@ class Spaceship(KineticObject):
     self.wpnprim.handle_keypress(keys_pressed[self.keymapping['fire']],
                                  shiplist, staticlist, objlist)
     # calculate world coordinates movement from thruster forces
-    self.fx, self.fy = self._ship2world_dirs(thrustx, thrusty)
-    return
+    dfx, dfy = self._ship2world_dirs(thrustx, thrusty)
+    self.fx += dfx
+    self.fy += dfy
 
   def _ship2world_dirs(self, x, y):
     """

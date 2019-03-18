@@ -254,7 +254,7 @@ class WpnKineticRocket(object):
     rocket = ProjKineticRocket(self, 
       self.mother.x, self.mother.y, self.mother.phi)
     objlist.append(rocket)
-    dvmother = 0.2 * self.mother.m / self.rocketmass * self.speed
+    dvmother = 1.0 * self.mother.m / self.rocketmass * self.speed
     self.mother.vx -= dvmother * np.sin(self.mother.phi)
     self.mother.vy -= dvmother * np.cos(self.mother.phi)
     self._check_for_start_reload()
@@ -294,7 +294,6 @@ class ProjKineticRocket(KineticObject):
     self.armtime = self.launcher.armtime
     self.vx = self.launcher.mother.vx + self.launcher.speed * np.sin(self.phi)
     self.vy = self.launcher.mother.vy + self.launcher.speed * np.cos(self.phi)
-    self.spin = self.launcher.induced_spin
     self.color = self.launcher.color
 
     self.timer = Timer()
@@ -304,7 +303,8 @@ class ProjKineticRocket(KineticObject):
     if self.timer.get() > self.armtime:
       self.col_elastic = 0.9
       self.m = self.launcher.rocketmass
-      other.vphi += (np.random.rand() - 0.5) * self.launcher.induced_spin
+      other.vphi += (np.random.rand() - 0.5) * (
+         self.launcher.induced_spin / other.L )
       #self.hp = -1
       if k is None:
         k = self.col_elastic

@@ -9,7 +9,7 @@ class KineticObject(object):
     self.vx, self.vy, self.vphi = 0,0,0 # State variables: x, y, phi 
     self.fx, self.fy, self.fn = 0,0,0 # and derivatives and forces
 
-    self.m, self.L = 1., 20000. # mass and moment of inertia
+    self.m, self.L = 1., 20_000. # mass and moment of inertia
     self.hp = 100 # hp
     self.col_elastic = 0.9
     self.hitbox = np.array([ # default hitbox: small triangle shape for ships
@@ -56,6 +56,9 @@ class KineticObject(object):
     dvphi = self.fn/self.L
     self.vphi = self.vphi + dvphi
     return self.vx, self.vy, self.vphi
+
+  def reset_forces(self):
+    self.fx = self.fy = self.fn = 0
 
   def collide(self, other, k = None):
     if other == self:

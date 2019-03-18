@@ -26,6 +26,7 @@ x HP + lasers
 x clip and reload for railgun
 x heat
 x ship-ship collisions
+x some form of maximum distance
  weapon impacts mass and L
  mass and thrusters determine vmax
 x rockets (kinetic)
