@@ -32,7 +32,11 @@ class Background(object):
     ypos = np.random.randint(low=block[1]*self.bsize, high=(block[1]+1)*self.bsize, 
       size=self.Nstars)
     positions = np.transpose(np.vstack((xpos,ypos)))
-    brightness = np.minimum(1., 1+0.1*np.random.randn(self.Nstars))
+    brightness = np.maximum(
+      np.minimum(1., 
+        1-0.9*np.random.randn(self.Nstars)
+      ),
+    0)
     colors = np.transpose(np.tile(255*brightness, (3,1))).astype(int)
 
     self.blocks.append({'block': block, 'pos': positions, 'col': colors})
@@ -46,7 +50,10 @@ class Background(object):
     for block in self.blocks:
       shapetodraw = (xyworldtoscreen(block['pos'], camparams)+0.5).astype(int)
       for j in range(self.Nstars):
-        scr.set_at(shapetodraw[j], block['col'][j]) # takes too long?
+        #scr.set_at(shapetodraw[j], block['col'][j]) # takes too long?
+        pg.draw.circle(scr, block['col'][j],shapetodraw[j], 
+          int(5./camparams[0] + 0.5 ), 
+          0)
 
   def _checkboxes(self, camparams):
     """

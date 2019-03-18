@@ -109,7 +109,7 @@ class ProjRailgun(object):
     ])
     
   def draw(self, surf, camparams):
-    if self.timer.get() < 4.:
+    if self.timer.get() < 2.5:
       screenshape = xyworldtoscreen(self.line_ends, camparams)
       pg.draw.line(surf, 
         (0.6*np.exp(-self.timer.get() / .1) + .4*np.exp(-self.timer.get() / 4.))
