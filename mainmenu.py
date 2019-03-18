@@ -66,23 +66,53 @@ class MainMenu(object):
     nrofplayers = len(playermappings)
     pressed = False
     for pl in range(nrofplayers):
+      notdrawn_ = True
       pressed = False
-      textlist = []
-      poslist = []
-      self.screen.fill((0,0,0))
-      draw_dict(playermappings[pl], textlist, poslist, self.sab, 
-        x = 0., y0 = 0.4, dy = -0.05, translater = normalnames)
-      textlist.append(self.sab.render("Player "+str(pl+1), True, 3*(255,)))
-      poslist.append((-0.2, 0.46))
-      textlist.append(self.sab.render("Space to advance", True, 3*(255,)))
-      poslist.append((-0.2, -0.46))
-      self._drawtextsatpos(textlist, poslist)
-      self._drawtextsatpos([self.back_text], [[0.3, 0.]])  # back button
-      pg.display.flip()
       while not pressed:
+        if notdrawn_:
+          notdrawn_ = False
+          self.screen.fill((0,0,0))
+          textlist = []
+          poslist = []
+          draw_dict(playermappings[pl], textlist, poslist, self.sab, 
+            x = 0.3, y0 = 0.4, dy = -0.05, translater = normalnames)
+          textlist.append(self.sab.render("Player "+str(pl+1), True, 3*(255,)))
+          poslist.append((-0.2, 0.46))
+          textlist.append(self.sab.render("Space to advance", True, 3*(255,)))
+          poslist.append((-0.2, -0.46))
+          textlist.append(self.sab.render("to change a key, press the key you want",
+            True, (255,255,255)))
+          textlist.append(self.sab.render("to change, then press the new key", True, 
+            (255,255,255)))
+          poslist.append((-0.2, 0.1))
+          poslist.append((-0.2, -0.1))
+          self._drawtextsatpos(textlist, poslist)
+          self._drawtextsatpos([self.back_text], [[0.3, 0.]])  # back button
+          pg.display.flip()
         events = pg.event.get()
         for e in events:
           if e.type == pg.KEYDOWN:
+            if e.key in playermappings[pl].values():
+              remapped = False
+              func = [k for k,v in playermappings[pl].items() if v == e.key][0]
+              del playermappings[pl][func]
+              self.screen.fill((0,0,0))
+              txtlist = [self.sab.render(
+                "You pressed the "+ normalnames[e.key] 
+                + " key, now press the new key to use", True,
+                (255,255,255)),]
+              pslist = [(0,0)]
+              self._drawtextsatpos(txtlist, pslist)
+              pg.display.flip()
+              pg.event.pump()
+              while not remapped:
+                _events = pg.event.get()
+                for _e in _events:
+                  if _e.type == pg.KEYDOWN:
+                    playermappings[pl][func] = _e.key
+                    remapped = True
+                    notdrawn_ = True
+                    pg.event.pump()
             if e.key == pg.K_b:
               return
             if e.key == pg.K_SPACE:
@@ -304,7 +334,8 @@ class MainMenu(object):
           self.inmain = False
           notdrawn = True
         if keys[pg.K_q] or keys[pg.K_ESCAPE]:
-          pg.quit()
+          self.game.quit()
+          return
         pg.event.pump()
         self.checkforpgevents()
       if self.incontrols:

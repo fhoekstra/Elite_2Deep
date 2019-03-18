@@ -178,7 +178,9 @@ class WpnLaser(object):
 
     self._heat()
 
-    staticlist.append(ProjLaser(0,0,0,0, line_ends = self.coords))
+    staticlist.append(ProjLaser(0,0,0,0, line_ends = self.coords, 
+      width= int(3 + 2*np.sin(0.02*pg.time.get_ticks())))
+    )
 
     if self.mother.hit_ships(shiplist, self.coords, 0): # ship is hit now
       if self.hittime is None: # first hit of series
@@ -199,13 +201,14 @@ class WpnLaser(object):
       self._cool()
 
 class ProjLaser(object):
-  def __init__(self, x, y, phi, wpnrange, line_ends=None):
+  def __init__(self, x, y, phi, wpnrange, line_ends=None, width = 2):
     if line_ends is None:
       self.line_ends = self.create_line_ends(x, y, phi, wpnrange)
     else:
       self.line_ends = line_ends
     self.outercolor = (0,200,0)
     self.innercolor = (200,200,0)
+    self.width = width
   
   def create_line_ends(self, x, y, phi, wpnrange):
     return np.array([
@@ -217,8 +220,10 @@ class ProjLaser(object):
     
   def draw(self, surf, camparams):
     screenshape = xyworldtoscreen(self.line_ends, camparams)
-    pg.draw.line(surf, self.outercolor, screenshape[0], screenshape[1], 4)
-    pg.draw.line(surf, self.innercolor, screenshape[0], screenshape[1], 2)
+    pg.draw.line(surf, self.outercolor, screenshape[0], screenshape[1],
+      self.width+2)
+    pg.draw.line(surf, self.innercolor, screenshape[0], screenshape[1], 
+      self.width)
     return False # remove after this draw cycle
 
 class WpnKineticRocket(object):

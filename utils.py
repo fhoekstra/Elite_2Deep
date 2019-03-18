@@ -108,7 +108,11 @@ def draw_dict(dct, textlist, poslist, fontobj,
     translate = str
   else:
     def translate(val):
-      return translater[val]
+      try:
+        ret = translater[val]
+      except KeyError as e:
+        ret = str(val)
+      return ret
       
   wi = 0 # index
   for key in dct:
