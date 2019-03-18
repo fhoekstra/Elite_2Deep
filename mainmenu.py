@@ -15,6 +15,7 @@ class MainMenu(object):
     self.inshipselect = False
     self.inwpnselect = False
     self.play = False
+    self.reset = False
     # init
     self.game = game
     self.screen = scr
@@ -28,6 +29,7 @@ class MainMenu(object):
     pg.font.init()
     self.sab = pg.font.Font('font/Sabatica-regular.ttf', 28)
     self.play_text = self.sab.render('[P]LAY', True, (0,255,0))
+    self.reset_text = self.sab.render('[R]estart', True, (0,255,0))
     self.controls_text = self.sab.render('[C]ONTROLS', True, (255,255,255))
     self.ships_text = self.sab.render('[S]HIPS', True, (255,255,255))
     self.weapons_text = self.sab.render('[W]EAPONS', True, (255,10,10))
@@ -47,16 +49,16 @@ class MainMenu(object):
       self.screen.blit(textlist[i], rect)
 
   def drawmenu(self):
-    textlist = [self.play_text, self.controls_text, self.ships_text,
+    textlist = [self.play_text, self.reset_text, self.controls_text, self.ships_text,
                self.weapons_text, self.quit_text]
-    textpositions = [(0., 0.3), (0., 0.1), (0., -0.1), (0., -0.3), (0.3, 0.4)]
+    textpositions = [(0., 0.3), (0., 0.45), (0., 0.1), (0., -0.1), (0., -0.3), (0.3, 0.4)]
     self.screen.fill((0,0,0))
     self._drawtextsatpos(textlist, textpositions)
     pg.display.flip()
 
   def drawcontrols(self):
-    dispinfo = pg.display.Info()
-    scrw, scrh = dispinfo.current_w, dispinfo.current_h
+    #dispinfo = pg.display.Info()
+    #scrw, scrh = dispinfo.current_w, dispinfo.current_h
 
     nrofplayers = len(playermappings)
     pressed = False
@@ -225,6 +227,10 @@ class MainMenu(object):
         if notdrawn:
           self.drawmenu()
           notdrawn = False
+        if keys[pg.K_r]:
+          self.play = True
+          self.inmain = False
+          self.reset = True
         if keys[pg.K_p]:
           self.play = True
           self.inmain = False
@@ -264,5 +270,8 @@ class MainMenu(object):
         pg.event.pump()
     
     if self.play:
-      self.game.rungame()
+      if self.reset:
+        self.game.resetgame()
+      else:
+        self.game.rungame()
       

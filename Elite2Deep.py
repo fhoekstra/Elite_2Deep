@@ -12,30 +12,35 @@ from utils import collide_objects
 class Elite2Deep(object):
     def __init__(self, screen):
         self.screen = screen
-        # Init model
-        ship1 = Spaceship(playernr=1)
-        ship1.x, ship1.y = (800,0)
-        ship2 = Spaceship(playernr=2)
-        ship2.x, ship2.y = (-800,0)
 
-        ship1.set_shape(talon)
-        ship2.set_shape(vector)
-
-        # list of player-controlled objects
-        self.shiplist = [ship1, ship2]
-
-        # list of non-camera focus objects
-        self.objlist = []
-        self.staticlist = []
+        self.set_defaults(2)
 
         # Rendering init
         self.camera = Camera()
         self.camera.update(self.shiplist)
         self.background = Background(self.camera)
 
+    def set_defaults(self, playernr):
+        if playernr == 2:
+            ship1 = Spaceship(playernr=1)
+            ship1.x, ship1.y = (800,0)
+            ship2 = Spaceship(playernr=2)
+            ship2.x, ship2.y = (-800,0)
+
+            ship1.set_shape(talon)
+            ship2.set_shape(vector)
+
+            # list of player-controlled objects
+            self.shiplist = [ship1, ship2]
+
+            # list of non-camera focus objects
+            self.objlist = []
+            self.staticlist = []
+        else:
+            return NotImplementedError("Implement scenarios")
+
     def run(self):
         self.runmenu()
-        self.rungame()
 
     def runmenu(self):
         # main menu loop
@@ -44,6 +49,10 @@ class Elite2Deep(object):
         menu = mm.MainMenu(self, self.screen, self.shiplist, 
             shipdict, wpndict, screenres)
         menu.menuloops()
+
+    def resetgame(self):
+        self.set_defaults(2)
+        self.rungame()
 
     def rungame(self):
         # Start sim loop
