@@ -15,6 +15,7 @@ class MainMenu(object):
     self.inshipselect = False
     self.inwpnselect = False
     self.inscenes = False
+    self.setdif = False
     self.play = False
     self.reset = False
     # init
@@ -34,6 +35,7 @@ class MainMenu(object):
     self.controls_text = self.sab.render('[C]ONTROLS', True, (255,255,255))
     self.ships_text = self.sab.render('[S]HIPS', True, (255,255,255))
     self.weapons_text = self.sab.render('[W]EAPONS', True, (255,10,10))
+    self.difficulty_text = self.sab.render('[D]IFFICULTY SETTINGS', True, 3*(255,))
     self.scenarios_text = self.sab.render('SC[E]NARIOS', True, (255,255,255))
     self.quit_text = self.sab.render('[Q]UIT [Esc]', True, (255,0,0))
     self.back_text = self.sab.render('[B]ACK', True, (180,0,0))
@@ -52,12 +54,57 @@ class MainMenu(object):
 
   def drawmenu(self):
     textlist = [self.play_text, self.reset_text, self.controls_text, self.ships_text,
-               self.weapons_text, self.scenarios_text, self.quit_text]
+               self.weapons_text, self.scenarios_text, self.difficulty_text, self.quit_text]
     textpositions = [(0., 0.3), (0., 0.2), (0., 0.1), (0., -0.1),
-      (0., -0.3), (0., -0.2), (0.3, 0.4)]
+      (0., -0.3), (0., -0.2), (0., 0.), (0.3, 0.4)]
     self.screen.fill((0,0,0))
     self._drawtextsatpos(textlist, textpositions)
     pg.display.flip()
+
+  def changedifficulty(self):
+    #dispinfo = pg.display.Info()
+    #scrw, scrh = dispinfo.current_w, dispinfo.current_h
+
+    pressed = False
+    for i, ship in enumerate(self.shiplist):
+      notdrawn_ = True
+      pressed = False
+      while not pressed:
+        if notdrawn_:
+          notdrawn_ = False
+          self.screen.fill((0,0,0))
+          textlist = []
+          poslist = []
+          textlist.append(self.sab.render("Player "+str(i+1), True, 3*(255,)))
+          poslist.append((-0., 0.))
+          textlist.append(self.sab.render("Space to advance", True, 3*(255,)))
+          poslist.append((-0.2, -0.46))
+          textlist.append(self.sab.render(
+            "[R]otational damping (0 is hard): " + str(ship.rotdamping),
+            True, 3*(255,)))
+          textlist.append(self.sab.render(
+            "[T]ranslational difficulty: " + 
+              ['"hard"' if ship.easytranslation == False else '"easy"'][0],
+            True, 3*(255,)))
+          poslist.append((0., 0.2))
+          poslist.append((0., -0.2))
+          self._drawtextsatpos(textlist, poslist)
+          self._drawtextsatpos([self.back_text], [[0.3, 0.]])  # back button
+          pg.display.flip()
+        events = pg.event.get()
+        for e in events:
+          if e.type == pg.KEYDOWN:
+            if e.key == pg.K_r:
+              ship.toggle_easy_rotation()
+              notdrawn_ = True
+            if e.key == pg.K_t:
+              ship.easytranslation = not ship.easytranslation
+              notdrawn_ = True
+            if e.key == pg.K_b:
+              return
+            if e.key == pg.K_SPACE:
+              pressed = True
+        self.checkforpgevents(events = events)
 
   def drawcontrols(self):
     #dispinfo = pg.display.Info()
@@ -333,6 +380,10 @@ class MainMenu(object):
           self.inscenes = True
           self.inmain = False
           notdrawn = True
+        if keys[pg.K_d]:
+          self.setdif = True
+          self.inmain = False
+          notdrawn = True
         if keys[pg.K_q] or keys[pg.K_ESCAPE]:
           self.game.quit()
           return
@@ -357,6 +408,13 @@ class MainMenu(object):
         self.inscenes = False
         self.inmain = True
         notdrawn = True
+        pg.event.pump()
+        self.checkforpgevents()
+      if self.setdif:
+        self.changedifficulty()
+        self.setdif = False
+        self.inmain = True
+        self.notdrawn = True
         pg.event.pump()
         self.checkforpgevents()
       while self.inshipselect:

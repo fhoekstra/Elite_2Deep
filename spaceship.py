@@ -15,6 +15,9 @@ class Spaceship(KineticObject):
     # init
     super().__init__()
     self.playernr = playernr
+    self.rotdamping = 0
+    self.easydamping = 10.
+    self.easytranslation = False
 
     # Ship properties
     self.vmax = 1000
@@ -86,7 +89,10 @@ class Spaceship(KineticObject):
       )
     else:
       invgammaphi = 1
-    self.vphi = self.vphi + invgammaphi*dvphi
+    damping = 0
+    if self.rotdamping:
+      damping = - self.rotdamping * self.vphi / self.L
+    self.vphi = self.vphi + invgammaphi*dvphi + damping
     return self.vx, self.vy, self.vphi
   
   def hit_ships(self, shiplist, line_ends, dmg):
@@ -101,6 +107,12 @@ class Spaceship(KineticObject):
             shiplist.pop(shiplist.index(ship))
     return shiphit
   
+  def toggle_easy_rotation(self):
+    if self.rotdamping == 0:
+      self.rotdamping = self.easydamping
+    else:
+      self.rotdamping = 0
+
   def do_key_actions(self, keys_pressed, shiplist, scr, objlist, staticlist):
     # rotation thrusters and force
     if cxor(keys_pressed[self.keymapping['leftrot']], 
@@ -131,12 +143,15 @@ class Spaceship(KineticObject):
 
     # weapons
     self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
-                                shiplist, staticlist, objlist)
+      shiplist, staticlist, objlist)
 
     self.wpnprim.handle_keypress(keys_pressed[self.keymapping['fire']],
-                                 shiplist, staticlist, objlist)
+      shiplist, staticlist, objlist)
+    if not self.easytranslation:
     # calculate world coordinates movement from thruster forces
-    dfx, dfy = self._ship2world_dirs(thrustx, thrusty)
+      dfx, dfy = self._ship2world_dirs(thrustx, thrusty)
+    else:
+      dfx, dfy = -thrustx, thrusty
     self.fx += dfx
     self.fy += dfy
 
