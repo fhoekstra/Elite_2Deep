@@ -17,7 +17,7 @@ class MainMenu(object):
     self.inscenes = False
     self.setdif = False
     self.play = False
-    self.reset = False
+
     # init
     self.game = game
     self.screen = scr
@@ -356,10 +356,7 @@ class MainMenu(object):
           self.drawmenu()
           notdrawn = False
         if keys[pg.K_r]:
-          self.play = True
-          self.inmain = False
-          self.reset = True
-          notdrawn = True
+          self.game.resetgame()
         if keys[pg.K_p]:
           self.play = True
           self.inmain = False
@@ -426,10 +423,7 @@ class MainMenu(object):
         self.checkforpgevents()
     
     if self.play:
-      if self.reset:
-        self.game.resetgame()
-      else:
-        self.game.rungame()
+      self.game.rungame()
       
   def checkforpgevents(self, other_checks=None, events=None):
     if other_checks is None:

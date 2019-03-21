@@ -15,6 +15,7 @@ class Elite2Deep(object):
         self.screen = screen
         self.playernr = 2
         self.chosen_scene = 0
+        self.shiplist = []
 
         self.scenes = scenarios
         self.set_scene(self.playernr, self.chosen_scene)
@@ -25,14 +26,11 @@ class Elite2Deep(object):
         self.background = Background(self.camera)
 
     def set_scene(self, playernr, j):
-        self.shiplist = []
+        self.resurrectdead() # ships
+
         pscenes = self.scenes[playernr]
-        pnr = 1
-        for shipprops in pscenes[j]:
-            ship = Spaceship(playernr = pnr)
-            setpropsfromdict(ship, shipprops)
-            self.shiplist.append(ship)
-            pnr += 1
+        for i, shipprops in enumerate(pscenes[j]):
+            setpropsfromdict(self.shiplist[i], shipprops)
 
         # list of non-camera focus objects
         self.objlist = []
@@ -49,9 +47,27 @@ class Elite2Deep(object):
             shipdict, wpndict, screenres)
         menu.menuloops()
 
+    def resurrectdead(self):
+        alive = len(self.shiplist)
+        while self.playernr > alive: # revive dead ships
+            self.shiplist.append(Spaceship(playernr = alive+1))
+            alive = len(self.shiplist)
+
+    def rearmandrepairships(self):
+        
+        for ship in self.shiplist:
+            ship.hp = 100 # repair
+            wpnprimtype, wpnsectype = type(ship.wpnprim), type(ship.wpnsec)
+            ship.wpnprim = wpnprimtype(ship, wpn_idx=0) # rearm primary
+            ship.wpnsec = wpnsectype(ship, wpn_idx=1) # rearm secondary
+
     def resetgame(self):
+        #self.set_scene(self.playernr, self.chosen_scene)
+        #self.rungame()
+        self.resurrectdead()
+        self.rearmandrepairships()
         self.set_scene(self.playernr, self.chosen_scene)
-        self.rungame()
+        #self.rungame()
 
     def rungame(self):
         # Start sim loop
