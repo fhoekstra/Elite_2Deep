@@ -21,11 +21,8 @@ wpndict = {
   'Kinetic Rocket': {
     'name': 'Kinetic Rocket',
     'descr': "A heavy, slow rocket, that spins your target upon collision.",
-    'flighttime' : 10,
     'rocketmass' : 2,
     'speed' : 100,
-    'armtime' : 1.5,
-    'induced_spin': 60_000,
-    'rockethp': 4,
+    'armtime' : 1.0,
   },
 }

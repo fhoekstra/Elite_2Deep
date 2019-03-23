@@ -1,7 +1,7 @@
 import numpy as np
 import pygame as pg
 
-from utils import bb_on_line, xyworldtoscreen, Timer, setpropsfromdict, rotate
+from utils import bb_on_line, xyworldtoscreen, Timer, setpropsfromdict, rotate, centershape
 from assets.UIElements import LaserElement, RailgunElement
 
 from config.weaponprops import wpndict
@@ -237,7 +237,7 @@ class WpnKineticRocket(object):
     self.flighttime = 10.
     self.armtime = 0.5
     self.speed = 500
-    self.induced_spin = 1_000
+    self.induced_spin = 60_000
     self.color = (0,243,250)
 
     setpropsfromdict(self, wpndict['Kinetic Rocket']) # import from config
@@ -295,6 +295,21 @@ class ProjKineticRocket(KineticObject):
     self.vx = self.launcher.mother.vx + self.launcher.speed * np.sin(self.phi)
     self.vy = self.launcher.mother.vy + self.launcher.speed * np.cos(self.phi)
     self.color = self.launcher.color
+    self.shape = 10. * np.array([
+      (0., 3.),
+      (-1., 1.),
+      (-0.6, -1.),
+      (-1.5, -2.),
+      (-1.5, -3.),
+      (-0.4, -2.),
+      (0.4, -2.),
+      (1.5, -3.),
+      (1.5, -2.),
+      (0.6, -1.),
+      (1., 1.),
+    ])
+    self.shape = centershape(self.shape)
+    self.hitbox = self.shape
 
     self.timer = Timer()
     self.timer.start()
@@ -314,6 +329,7 @@ class ProjKineticRocket(KineticObject):
 
   def draw(self, surf, camparams):
     if self.timer.get() > self.armtime - 10e-3:
+      self.color = (255, 0, 20)
       self.col_elastic = 0.9
       self.m = self.launcher.rocketmass
     if self.timer.get() > self.flighttime or self.hp < 0:

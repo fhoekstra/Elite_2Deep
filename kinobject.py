@@ -13,9 +13,9 @@ class KineticObject(object):
     self.hp = 100 # hp
     self.col_elastic = 0.9
     self.hitbox = np.array([ # default hitbox: small triangle shape for ships
-      (0,60),
-      (20,0),
-      (-20,0)
+      (0,85),
+      (30,0),
+      (-30,0)
     ])
     self.shape = self.hitbox
     self.hitbox = centershape(self.hitbox)
