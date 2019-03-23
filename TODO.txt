@@ -20,6 +20,7 @@ X > render controls from source -> add more keys to names dict
 structural:
 >joysticks
 >>only activate control schemes for players who confirm presence at start
+> use decorators to get less if statements
 
 gameplay:
 x HP + lasers

@@ -76,25 +76,37 @@ class Elite2Deep(object):
         goquit = False
         t0 = pg.time.get_ticks()*0.001
         pieper = 1.0 # timer every second
-
+        mintimestep = 0.003
+        simfactor = 2
+        i = 0
         # Loop
         while running :
-            t = pg.time.get_ticks()*0.001
+            i += 1
+            t_new = pg.time.get_ticks() * 0.001
+            dt = float(t_new - t0)
+            if dt < mintimestep: # 60 fps
+                pg.time.wait(int(1000 * (mintimestep - dt) - 0.5))
+                t = pg.time.get_ticks() * 0.001
+            else:
+                t = t_new
             dt = float(t - t0)
             t0 = t
+            verbose = False
+            if i % simfactor == 0:
+                dodraw = True
+            else:
+                dodraw = False
+            """ # code for setting verbose to True once every second
             pieper -= dt
             if pieper < 0:
                 #verbose = True
                 pieper += 1.0
             else:
                 verbose = False
-
+            """
             # Get pressed keys
             keys = pg.key.get_pressed()
-
-            # Time step?   
-            if dt>0. :
-
+            if dodraw:
                 # Calculate camera params
                 self.camera.update(self.shiplist, verbose=verbose)
 
@@ -103,28 +115,30 @@ class Elite2Deep(object):
                 # Fill with background
                 self.background.draw(self.screen)
 
-                for ship in self.shiplist:
-                    # Process pilot commands
-                    ship.do_key_actions(keys, self.shiplist+self.objlist, self.screen, self.objlist, self.staticlist)
-                    # Calculate non-thrust forces
-                    
-                    # Numerical integration
-                    ship.update_velocities(dt)
-                    ship.update_position(dt)
-                    ship.reset_forces()
-
+            for ship in self.shiplist:
+                # Process pilot commands
+                ship.do_key_actions(keys, self.shiplist+self.objlist, self.screen, self.objlist, self.staticlist)
+                # Calculate non-thrust forces
+                
+                # Numerical integration
+                ship.update_velocities(dt)
+                ship.update_position(dt)
+                ship.reset_forces()
+                if dodraw:
                     # Draw new frame here
                     if not ship.draw(self.screen, self.camera.getparams()):
                         self.shiplist.pop(self.shiplist.index(ship))
-                
-                for obj in self.objlist:
-                    obj.update_velocities(dt)
-                    obj.update_position(dt)
-                    obj.reset_forces()
+            
+            for obj in self.objlist:
+                obj.update_velocities(dt)
+                obj.update_position(dt)
+                obj.reset_forces()
+                if dodraw:
                     if not obj.draw(self.screen, self.camera.getparams()):
                         self.objlist.pop(self.objlist.index(obj))
-                collide_objects(self.shiplist + self.objlist)
-                enforce_max_range(self.shiplist)
+            collide_objects(self.shiplist + self.objlist)
+            enforce_max_range(self.shiplist)
+            if dodraw:
                 for stat in self.staticlist:
                     if not stat.draw(self.screen, self.camera.getparams()):
                         self.staticlist.pop(self.staticlist.index(stat))
