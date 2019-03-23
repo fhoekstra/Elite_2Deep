@@ -48,10 +48,10 @@ class Elite2Deep(object):
         menu.menuloops()
 
     def resurrectdead(self):
-        alive = len(self.shiplist)
-        while self.playernr > alive: # revive dead ships
-            self.shiplist.append(Spaceship(playernr = alive+1))
-            alive = len(self.shiplist)
+        playersalive = [ship.playernr for ship in self.shiplist]
+        for nr in np.arange(self.playernr) + 1 : # revive dead ships
+            if nr not in playersalive:
+                self.shiplist.insert(nr - 1, Spaceship(playernr = nr))
 
     def rearmandrepairships(self):
         
