@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 
-from config.controls import playermappings, normalnames
+from config.controls import playermappings
 from utils import normscreentopixel, remove_key, draw_dict, resource_path
 
 class MainMenu(object):
@@ -122,7 +122,7 @@ class MainMenu(object):
           textlist = []
           poslist = []
           draw_dict(playermappings[pl], textlist, poslist, self.sab, 
-            x = 0.3, y0 = 0.4, dy = -0.05, translater = normalnames)
+            x = 0.3, y0 = 0.4, dy = -0.05, translater = pg.key.name)
           textlist.append(self.sab.render("Player "+str(pl+1), True, 3*(255,)))
           poslist.append((-0.2, 0.46))
           textlist.append(self.sab.render("Space to advance", True, 3*(255,)))

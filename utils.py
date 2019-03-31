@@ -108,13 +108,18 @@ def draw_dict(dct, textlist, poslist, fontobj,
 
   if translater is None:
     translate = str
-  else:
+  elif type(translater) == dict:
     def translate(val):
       try:
         ret = translater[val]
       except KeyError as e:
         ret = str(val)
       return ret
+  elif callable(translater):
+    translate = translater
+  else:
+    raise ValueError("parameter 'translater' is of unhandleable type."
+      + " Use dict or function.")
       
   wi = 0 # index
   for key in dct:
