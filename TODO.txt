@@ -1,23 +1,38 @@
 easy:
 x fullscreen
+x >rebind controls in menu
 
 sound:
 charging, firing, thrusters?
 
 visual:
-renderer object
+// renderer object // no need
 x >< object draw with world coords < nope, leave in utils functions for now
 X >UI element draw with normalized screen coords 
- >stars background
+X >stars background
+X >> stars as circles with world coordinate defined radius
 X > main menu
 X > weapon select
- > weapon UI element displacement
- > ship select
- > render controls from source
+X > weapon UI element displacement -> fix bug with no ammo rails always top left
+X > ship select
+X > render controls from source -> add more keys to names dict
+
+structural:
+>joysticks
+>>only activate control schemes for players who confirm presence at start
+> use decorators to get less if statements
 
 gameplay:
 x HP + lasers
 x clip and reload for railgun
 x heat
- ship-ship collisions
- rockets (kinetic)
+x ship-ship collisions
+x some form of maximum distance
+ weapon impacts mass and L
+ mass and thrusters determine vmax
+x rockets (kinetic)
+ bombs
+ ram booster pack
+x scenarios, reset
+x use max elasticity constant of objects for both in collision
+

@@ -19,4 +19,5 @@ vector = np.array([
     ]
 )
 
-shipdict = {'talon': talon, 'vector': vector}
+shipdict = {'talon':{'name':'Talon', 'shape': talon},
+            'vector':{'name': 'Galactica', 'shape': vector}}

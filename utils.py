@@ -64,13 +64,11 @@ def normscreentopixel(pointslist, camparams):
   """
   _, _, _, dispw, disph = camparams
 
-  AR = dispw / disph # aspect ratio
-
-  xn = pointslist[:,0]
-  yn = pointslist[:,1]
-
-  y = 0.5*disph - disph*yn
-  x = 0.5*dispw + dispw*xn/AR
+  #AR = dispw / disph # aspect ratio
+  #xn = pointslist[:,0]
+  #yn = pointslist[:,1]
+  #y = 0.5*disph - disph*yn
+  #x = 0.5*dispw + dispw*xn/AR
   shapetodraw = np.array([dispw, -disph])*pointslist
   shapetodraw = shapetodraw + 0.5 * np.array([dispw, disph])
   return shapetodraw
@@ -112,7 +110,11 @@ def draw_dict(dct, textlist, poslist, fontobj,
     translate = str
   else:
     def translate(val):
-      return translater[val]
+      try:
+        ret = translater[val]
+      except KeyError as e:
+        ret = str(val)
+      return ret
       
   wi = 0 # index
   for key in dct:
@@ -120,7 +122,48 @@ def draw_dict(dct, textlist, poslist, fontobj,
       color))
     poslist.append((x, y0+wi*dy))
     wi += 1
-    
+
+def collide_objects(objlist):
+  """
+  All objects in list must have a collide(otherobj) method.
+  All objects in list must have x,y,vx,vy,phi,vphi,hp,rect props.
+  collide method is called on both objects that collide. In principle, they
+  only affect the self, unless they explicitly cause damage to the other,
+  more than the other deals itself by default on a collision.
+  """
+  vnewlist = []
+  #import pdb; pdb.set_trace()
+  # Iterate through all objects. Test them for collision with all others
+  for i, iobj in enumerate(objlist):
+    vnewlist.append( (iobj.vx, iobj.vy) )
+    for jobj in objlist:
+      if iobj.rect.colliderect(jobj.rect) and iobj != jobj:
+        vnewlist[i] = iobj.collide(jobj, # we call this method on both objs
+          k = max((iobj.col_elastic, jobj.col_elastic))
+        ) # collision with self is handled in this method
+  for i, iobj in enumerate(objlist):
+    iobj.vx, iobj.vy = vnewlist[i]
+
+def enforce_max_range(shiplist, maxr = 7_000, strength = 1e-3 ):
+  allx = [ship.x for ship in shiplist]
+  ally = [ship.y for ship in shiplist]
+  xmax = max(allx)
+  ymax = max(ally)
+  xmin = min(allx)
+  ymin = min(ally)
+
+  if ((xmax - xmin)**2 + (ymax - ymin)**2) > maxr**2:
+    xavg = sum(allx) / len(shiplist)
+    yavg = sum(ally) / len(shiplist)
+    for ship in shiplist:
+      ship.vx += strength*(xavg - ship.x)#/np.abs(xavg - ship.x) # push back to center
+      ship.vy += strength*(yavg - ship.y)#/np.abs(yavg - ship.y)
+      ship.vphi = 0.999*ship.vphi # also stop rotation smoothly
+
+def setpropsfromdict(inst, dct):
+  for key in dct:
+    setattr(inst, key, dct[key])
+
 class Timer(object):  
   def start(self):
     self.start_time = time.clock()
