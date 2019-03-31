@@ -2,7 +2,7 @@ import pygame as pg
 import numpy as np
 
 from config.controls import playermappings, normalnames
-from utils import normscreentopixel, remove_key, draw_dict
+from utils import normscreentopixel, remove_key, draw_dict, resource_path
 
 class MainMenu(object):
   def __init__(self,scr, shiplist, shipdict, wpndict):
@@ -22,7 +22,7 @@ class MainMenu(object):
 
   def init_fonts_and_texts(self):
     pg.font.init()
-    self.sab = pg.font.SysFont('Arial', 28)
+    self.sab = pg.font.Font(resource_path('font\\Sabatica-regular.ttf'), 28)
     self.play_text = self.sab.render('[P]LAY', True, (0,255,0))
     self.controls_text = self.sab.render('[C]ONTROLS', True, (255,255,255))
     self.ships_text = self.sab.render('[S]HIPS', True, (255,255,255))
