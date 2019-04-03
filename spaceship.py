@@ -25,9 +25,12 @@ class Spaceship(KineticObject):
     self.thrusters = 200
     self.shape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
     self.shape = centershape(self.shape)
-    self.rect = None # Collision
+
+    # Collision and hit status
+    self.rect = None
     self._update_rect()
     self.ishit = False
+    self.hitbycolor = None
 
     # Weapons
     self.wpnprim = WpnLaser(self, 0)
@@ -60,8 +63,11 @@ class Spaceship(KineticObject):
     self.wpnprim.ui.draw(surf, camparams)
     self.wpnsec.ui.draw(surf, camparams)
     if self.ishit:
-      self.hitmarker.draw(surf,camparams)
+      self.hitmarker.draw(surf, camparams, color = self.hitbycolor)
       self.ishit -= 1
+      if self.ishit <= 0: # reset hit status
+        self.ishit = 0
+        self.hitbycolor = None
     return True # this ship stays alive
 
   def update_velocities(self, dt):
@@ -109,6 +115,7 @@ class Spaceship(KineticObject):
           shiphit = True
           ship.hp = ship.hp - dmg
           ship.ishit = 6
+          ship.hitbycolor = self.color
           if ship.hp < 0:
             shiplist.pop(shiplist.index(ship))
     return shiphit
@@ -202,9 +209,11 @@ class HitMarker(object):
       sgnarr = np.array([xsgn, ysgn])
       self.lines.append([sgnarr * linestart, sgnarr * lineend])
     
-  def draw(self, surf, camparams):
+  def draw(self, surf, camparams, color = None):
+    if color is None:
+      color = self.color
     for line in self.lines:
       linestart = line[0] + np.array([self.ship.x, self.ship.y])
       lineend = line[1] + np.array([self.ship.x, self.ship.y])
       linestart, lineend = xyworldtoscreen(np.array([linestart, lineend]), camparams)
-      pg.draw.line(surf, self.color, linestart, lineend, 2)
+      pg.draw.line(surf, color, linestart, lineend, 2)

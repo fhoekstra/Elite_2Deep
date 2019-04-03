@@ -316,13 +316,13 @@ class ProjKineticRocket(KineticObject):
 
   def collide(self, other, k = None):
     if self.timer.get() > self.armtime:
-      self.col_elastic = 0.9
       self.m = self.launcher.rocketmass
       other.vphi += (np.random.rand() - 0.5) * (
          self.launcher.induced_spin / other.L )
       #self.hp = -1
       if hasattr(other, 'ishit'): # only set ishit for hitmarkers if armed
         other.ishit = 10
+        other.hitbycolor = self.launcher.mother.color
       if k is None:
         k = self.col_elastic
       return super().collide(other, k=k)
