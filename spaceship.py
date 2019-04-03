@@ -27,6 +27,7 @@ class Spaceship(KineticObject):
     self.shape = centershape(self.shape)
     self.rect = None # Collision
     self._update_rect()
+    self.ishit = False
 
     # Weapons
     self.wpnprim = WpnLaser(self, 0)
@@ -41,6 +42,7 @@ class Spaceship(KineticObject):
       self.color = (0,100,255)
 
     self.hp_ui = HPElement(self, playernr)
+    self.hitmarker = HitMarker(self)
     
   def set_shape(self, newshape):
     self.shape = centershape(newshape)
@@ -57,6 +59,9 @@ class Spaceship(KineticObject):
     self.hp_ui.draw(surf, camparams)
     self.wpnprim.ui.draw(surf, camparams)
     self.wpnsec.ui.draw(surf, camparams)
+    if self.ishit:
+      self.hitmarker.draw(surf,camparams)
+      self.ishit -= 1
     return True # this ship stays alive
 
   def update_velocities(self, dt):
@@ -103,6 +108,7 @@ class Spaceship(KineticObject):
         if bb_on_line(ship.rect, line_ends):
           shiphit = True
           ship.hp = ship.hp - dmg
+          ship.ishit = 6
           if ship.hp < 0:
             shiplist.pop(shiplist.index(ship))
     return shiphit
@@ -167,3 +173,38 @@ class Spaceship(KineticObject):
     yw = -sin*x - cos*y
     return xw, yw
 
+class HitMarker(object):
+  def __init__(self, ship):
+    self.ship = ship
+    self.color = ship.color
+    self.init_rel_line_coords()
+    
+  def init_rel_line_coords(self):
+    """ Coords are in world coords, relative to the ship center """
+    dist = 0.5 * np.sqrt(2) * 1.2 * np.sqrt(
+      np.max(self.ship.shape[0]) ** 2 + np.max(self.ship.shape[1]) ** 2)
+    length = 0.5 * dist
+    linestart = np.array([dist, dist])
+    lineend = linestart + np.sqrt(2) * np.array([length, length])
+    self.lines = []
+    # to be filled with lists of the form [arr(xstart, ystart), arr(xend, yend)]
+
+    for i in range(4):
+      if i % 2 == 0:
+        xsgn = -1
+      elif i % 2 == 1:
+        xsgn = +1
+      
+      if i < 1.5:
+        ysgn = +1
+      else:
+        ysgn = -1
+      sgnarr = np.array([xsgn, ysgn])
+      self.lines.append([sgnarr * linestart, sgnarr * lineend])
+    
+  def draw(self, surf, camparams):
+    for line in self.lines:
+      linestart = line[0] + np.array([self.ship.x, self.ship.y])
+      lineend = line[1] + np.array([self.ship.x, self.ship.y])
+      linestart, lineend = xyworldtoscreen(np.array([linestart, lineend]), camparams)
+      pg.draw.line(surf, self.color, linestart, lineend, 2)
