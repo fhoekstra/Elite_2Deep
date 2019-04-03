@@ -111,7 +111,7 @@ class Elite2Deep(object):
                 self.camera.update(self.shiplist, verbose=verbose)
 
                 # Clear screen   
-                self.screen.fill(black)
+                self.screen.fill((0,0,0))
                 # Fill with background
                 self.background.draw(self.screen)
 
@@ -169,13 +169,11 @@ class Elite2Deep(object):
         pg.quit()
         print("La Fin")
 
-# Colours
-black = (0, 0, 0) # RGB code (0-255)
-
-# Initialize pygame, set up screen
-pg.init()
-reso   = (xmax,ymax) = (1200,600)
-screen = pg.display.set_mode(reso, pg.RESIZABLE)
-# Load bitmaps
-game = Elite2Deep(screen)
-game.run()
+if __name__ == "__main__":
+    # Initialize pygame, set up screen
+    pg.init()
+    reso   = (xmax,ymax) = (1200,600)
+    screen = pg.display.set_mode(reso, pg.RESIZABLE)
+    # Run game
+    game = Elite2Deep(screen)
+    game.run()

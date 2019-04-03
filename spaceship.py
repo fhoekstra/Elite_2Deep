@@ -3,7 +3,7 @@ import numpy as np
 
 from utils import (cxor, centershape, rotate, boundingbox, xyworldtoscreen,
  bb_on_line)
-from weapons import WpnRailgun, WpnLaser
+from weapons import WpnRailgun, WpnBeamLaser
 from assets.UIElements import HPElement
 from config.controls import playermappings
 from kinobject import KineticObject
@@ -33,7 +33,7 @@ class Spaceship(KineticObject):
     self.hitbycolor = None
 
     # Weapons
-    self.wpnprim = WpnLaser(self, 0)
+    self.wpnprim = WpnBeamLaser(self, 0)
     self.wpnsec = WpnRailgun(self, 1)
 
     # Controls and color

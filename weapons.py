@@ -13,16 +13,17 @@ Wpn means a weapon as installed on a spaceship
 Proj means a projectile ejected by the weapon after it has been fired
 """
 
-def build_laser(ship, wpn_idx):
-  return WpnLaser(ship, wpn_idx=wpn_idx)
-
+def build_pulse_laser(ship, wpn_idx):
+  return WPnPulseLaser(ship, wpn_idx=wpn_idx)
+def build_beam_laser(ship, wpn_idx):
+  return WpnBeamLaser(ship, wpn_idx=wpn_idx)
 def build_railgun(ship, wpn_idx):
   return WpnRailgun(ship, wpn_idx=wpn_idx)
-
 def build_kinetic_rocket(ship, wpn_idx):
   return WpnKineticRocket(ship, wpn_idx=wpn_idx)
 
-wpndict['Laser']['build'] = build_laser
+wpndict['PulseLaser']['build'] = build_pulse_laser
+wpndict['BeamLaser']['build'] = build_beam_laser
 wpndict['Railgun']['build'] = build_railgun
 wpndict['Kinetic Rocket']['build'] = build_kinetic_rocket
 
@@ -119,7 +120,7 @@ class ProjRailgun(object):
     else:
       return False # remove after this draw cycle
 
-class WpnLaser(object):
+class WpnBeamLaser(object):
   def __init__(self, mother, wpn_idx=0):
 
     self.range = 700
@@ -128,7 +129,7 @@ class WpnLaser(object):
     self.coolps = 20 # heat lost per second while not firing
     self.cooldown_lvl = 50
     self.heatcap = 100 # maximum heat level
-    setpropsfromdict(self, wpndict['Laser']) # import from config
+    setpropsfromdict(self, wpndict['BeamLaser']) # import from config
 
     # init
     self.mother = mother
@@ -178,7 +179,7 @@ class WpnLaser(object):
 
     self._heat()
 
-    staticlist.append(ProjLaser(0,0,0,0, line_ends = self.coords, 
+    staticlist.append(ProjBeamLaser(0,0,0,0, line_ends = self.coords, 
       width= int(3 + 2*np.sin(0.02*pg.time.get_ticks())))
     )
 
@@ -200,7 +201,102 @@ class WpnLaser(object):
     else:
       self._cool()
 
-class ProjLaser(object):
+class WPnPulseLaser(WpnBeamLaser):
+  def __init__(self, mother, wpn_idx = 0):
+    super().__init__(mother, wpn_idx=wpn_idx)
+    self.range = 3000
+    self.dmg = 3
+    self.heatpshot = 5 # heat per shot while firing
+    self.coolpsec = 4 # heat lost per second
+    self.cooldown_lvl = 50
+    self.heatcap = 100 # maximum heat level
+    self.chargetime = 0.3 # time between pulses
+    
+    # additional init for pulse
+    self.color = (255, 100, 100)
+    self.charging = False
+    self.chargetimer = None
+    self.speed = 2000
+    del self.hittime
+    setpropsfromdict(self, wpndict['PulseLaser']) # import from config
+
+
+    self.ui = LaserElement(self, playernr=self.mother.playernr)
+  
+  def fire(self, objlist):
+    pulse = ProjPulseLaser(self, 
+      self.mother.x, self.mother.y, self.mother.phi)
+    objlist.append(pulse)
+    self.charging = True
+    self.chargetimer = Timer()
+    self.chargetimer.start()
+
+  def _check_if_charged(self):
+    if self.chargetimer is not None:
+      if self.chargetimer.get() >= self.chargetime:
+        self.charging = False
+
+  def handle_keypress(self, keypress, shiplist, staticlist, objlist):
+    self._check_if_charged()
+    self._cool()
+    if keypress and not self.overheat and not self.charging:
+      self.fire(objlist)
+      
+class ProjPulseLaser(KineticObject):
+  def __init__(self, launcher, x, y, phi):
+    super().__init__()
+    self.launcher = launcher
+    self.x = x
+    self.y = y
+    self.phi = phi
+    self.hp = 1
+    self.m = 1e-34
+    self.col_elastic = 1
+    self.flighttime = self.launcher.range / self.launcher.speed
+    self.vx = self.launcher.mother.vx + self.launcher.speed * np.sin(self.phi)
+    self.vy = self.launcher.mother.vy + self.launcher.speed * np.cos(self.phi)
+    self.color = self.launcher.color
+    self.shape = 10. * np.array([
+      (0., 3.),
+      (-1., 1.),
+      (-0.6, -1.),
+      (-1.5, -2.),
+      (-1.5, -3.),
+      (-0.4, -2.),
+      (0.4, -2.),
+      (1.5, -3.),
+      (1.5, -2.),
+      (0.6, -1.),
+      (1., 1.),
+    ])
+    self.shape = centershape(self.shape)
+    self.hitbox = self.shape
+
+    self.timer = Timer()
+    self.timer.start()
+
+  def collide(self, other, k = None):
+    if other is not self.launcher.mother:
+      other.hp -= self.launcher.dmg
+      self.hp = 0
+      if hasattr(other, 'ishit'): # only set ishit for hitmarkers if armed
+        other.ishit = 10
+        other.hitbycolor = self.launcher.mother.color
+      return super().collide(other, k=k)
+    else:
+      return self.vx, self.vy
+
+  def draw(self, surf, camparams):
+    if self.timer.get() > self.flighttime or self.hp < 0:
+      return False # this object is dead
+    else:
+      shapetodraw = rotate(self.shape, self.phi) # rotate shape to phi
+      shapetodraw = shapetodraw + np.array([self.x,self.y]) # add physics position
+      shapetodraw = xyworldtoscreen(shapetodraw, camparams)
+      pg.draw.polygon(surf, self.color, shapetodraw, 0)
+      return True # keep after this draw cycle
+
+class ProjBeamLaser(object):
   def __init__(self, x, y, phi, wpnrange, line_ends=None, width = 2):
     if line_ends is None:
       self.line_ends = self.create_line_ends(x, y, phi, wpnrange)
