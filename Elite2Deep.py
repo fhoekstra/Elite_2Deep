@@ -57,9 +57,18 @@ class Elite2Deep(object):
         
         for ship in self.shiplist:
             ship.hp = 100 # repair
-            wpnprimtype, wpnsectype = type(ship.wpnprim), type(ship.wpnsec)
-            ship.wpnprim = wpnprimtype(ship, wpn_idx=0) # rearm primary
-            ship.wpnsec = wpnsectype(ship, wpn_idx=1) # rearm secondary
+            if not ship.wpnprim is None:
+                if not callable(ship.wpnprim):
+                    wpnprimtype = type(ship.wpnprim)
+                else:
+                    wpnprimtype = wpnprim
+                ship.wpnprim = wpnprimtype(ship, wpn_idx=0) # rearm primary
+            if not ship.wpnsec is None:
+                if not callable(ship.wpnsec):
+                    wpnsectype = type(ship.wpnsec)
+                else:
+                    wpnsectype = wpnsec
+                ship.wpnsec = wpnsectype(ship, wpn_idx=1) # rearm secondary
 
     def resetgame(self):
         #self.set_scene(self.playernr, self.chosen_scene)
@@ -117,9 +126,9 @@ class Elite2Deep(object):
 
             for ship in self.shiplist:
                 # Process pilot commands
-                ship.do_key_actions(keys, self.shiplist+self.objlist, self.screen, self.objlist, self.staticlist)
-                # Calculate non-thrust forces
-                
+                ship.do_key_actions(keys, self.shiplist, self.screen,
+                    self.objlist, self.staticlist) # thrust adds forces
+
                 # Numerical integration
                 ship.update_velocities(dt)
                 ship.update_position(dt)
@@ -132,12 +141,12 @@ class Elite2Deep(object):
             for obj in self.objlist:
                 obj.update_velocities(dt)
                 obj.update_position(dt)
-                obj.reset_forces()
+                obj.reset_forces() # reset forces
                 if dodraw:
                     if not obj.draw(self.screen, self.camera.getparams()):
                         self.objlist.pop(self.objlist.index(obj))
-            collide_objects(self.shiplist + self.objlist)
-            enforce_max_range(self.shiplist)
+            collide_objects(self.shiplist + self.objlist) # collide: adds forces
+            enforce_max_range(self.shiplist) # enforce range: adds forces
             if dodraw:
                 for stat in self.staticlist:
                     if not stat.draw(self.screen, self.camera.getparams()):

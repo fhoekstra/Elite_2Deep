@@ -179,7 +179,7 @@ class MainMenu(object):
     poslist.append((0,0)) # position of wpn name
     self._render_wpn_props(cur_wpn, textlist, poslist)
     textlist.append(self.sab.render('ENTER to select', True, white))
-    poslist.append((0, -0.3))
+    poslist.append((0, 0.15))
     if chosen_wpn is not None:
       textlist.append(self.sab.render('PRIMARY: '+chosen_wpn, True, white))
       poslist.append((-0.3, 0.3))

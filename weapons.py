@@ -6,6 +6,7 @@ from assets.UIElements import LaserElement, RailgunElement
 
 from config.weaponprops import wpndict
 from kinobject import KineticObject
+from spaceship import Spaceship
 
 """
 Weapon objects:
@@ -14,7 +15,7 @@ Proj means a projectile ejected by the weapon after it has been fired
 """
 
 def build_pulse_laser(ship, wpn_idx):
-  return WPnPulseLaser(ship, wpn_idx=wpn_idx)
+  return WpnPulseLaser(ship, wpn_idx=wpn_idx)
 def build_beam_laser(ship, wpn_idx):
   return WpnBeamLaser(ship, wpn_idx=wpn_idx)
 def build_railgun(ship, wpn_idx):
@@ -22,10 +23,22 @@ def build_railgun(ship, wpn_idx):
 def build_kinetic_rocket(ship, wpn_idx):
   return WpnKineticRocket(ship, wpn_idx=wpn_idx)
 
-wpndict['PulseLaser']['build'] = build_pulse_laser
-wpndict['BeamLaser']['build'] = build_beam_laser
-wpndict['Railgun']['build'] = build_railgun
-wpndict['Kinetic Rocket']['build'] = build_kinetic_rocket
+def populate_dict(dct, dctnames_classes, lstofprops, *classargs, **classkwargs):
+  for _name, _class in dctnames_classes.items():
+    instance = _class(*classargs, **classkwargs)
+    for prop in lstofprops:
+      dct[_name][prop] = getattr(instance, prop)
+
+def complete_wpndict(wpndict): # is called at end of this file
+  names_classes = {'Railgun': WpnRailgun, 'PulseLaser': WpnPulseLaser,
+    'BeamLaser': WpnBeamLaser, 'Kinetic Rocket': WpnKineticRocket}
+
+  populate_dict(wpndict, names_classes, ['instant_dps', 'actual_dps'], Spaceship())
+
+  wpndict['PulseLaser']['build'] = build_pulse_laser
+  wpndict['BeamLaser']['build'] = build_beam_laser
+  wpndict['Railgun']['build'] = build_railgun
+  wpndict['Kinetic Rocket']['build'] = build_kinetic_rocket
 
 class WpnRailgun(object):
   def __init__(self, mother, wpn_idx=0):
@@ -33,6 +46,7 @@ class WpnRailgun(object):
     self.ammo = 25
     self.range = 7000
     self.dmg = 15
+    self.chargetime = 1.
     self.clipsize = 5
     self.reloadtime = 3.5
     self.color = (230,243,250)
@@ -45,7 +59,14 @@ class WpnRailgun(object):
     self.wpn_idx = wpn_idx # 0 for primary, 1 for secondary weapon
     self.chargetimer = None
     self.reloadtimer = None
+    self._calc_dps()
     self.ui = RailgunElement(self, playernr=self.mother.playernr)
+
+  def _calc_dps(self):
+    self.instant_dps = self.dmg / self.chargetime # without reloading
+    self.actual_dps = ( # including reloading
+      (self.instant_dps * self.chargetime * self.clipsize) # dmg per cycle
+      / (self.clipsize * self.chargetime + self.reloadtime)) # time per cycle
   
   def _charge(self, continue_charging):
     """Charges railgun for 1 second. Returns whether it can fire or not."""
@@ -54,7 +75,7 @@ class WpnRailgun(object):
         self.chargetimer = Timer()
         self.chargetimer.start()
         return False # do not fire
-      elif self.chargetimer.get() > 1.: # charging is done
+      elif self.chargetimer.get() > self.chargetime: # charging is done
         del self.chargetimer
         self.chargetimer = None # remove clock
         return True # fire
@@ -141,7 +162,12 @@ class WpnBeamLaser(object):
     self.heattimer = None
     self.cooltimer = None
 
+    self._calc_beam_dps()
     self.ui = LaserElement(self, playernr=self.mother.playernr)
+
+  def _calc_beam_dps(self):
+    self.instant_dps = self.dps # heatlvl cancels out of below calculation
+    self.actual_dps = self.instant_dps / (1 + (self.heatps / self.coolps))
 
   def _heat(self):
     self.cooltimer = None
@@ -201,14 +227,14 @@ class WpnBeamLaser(object):
     else:
       self._cool()
 
-class WPnPulseLaser(WpnBeamLaser):
+class WpnPulseLaser(WpnBeamLaser):
   def __init__(self, mother, wpn_idx = 0):
     super().__init__(mother, wpn_idx=wpn_idx)
     self.range = 3000 # set from config
     self.dmg = 3 # set from config
     self.heatpshot = 8 # heat per shot while firing
-    self.coolpsec = 15 # heat lost per second
-    self.cooldown_lvl = 50
+    self.coolpsec = 25 # heat lost per second
+    self.cooldown_lvl = 80
     self.heatcap = 100 # maximum heat level
     self.chargetime = 0.3 # time between pulses set from config
     
@@ -217,12 +243,16 @@ class WPnPulseLaser(WpnBeamLaser):
     self.charging = False
     self.chargetimer = None
     self.speed = 5000
-    del self.hittime
+    #del self.hittime, self.dps, self.heattimer, self.heatps # inherited&!used
     setpropsfromdict(self, wpndict['PulseLaser']) # import from config
 
-
+    self._calc_shot_dps()
     self.ui = LaserElement(self, playernr=self.mother.playernr)
   
+  def _calc_shot_dps(self):
+    self.instant_dps = self.dmg / self.chargetime
+    self.actual_dps = self.instant_dps / (1 + ((self.heatpshot/self.chargetime - self.coolps) / self.coolps))
+
   def _heat(self):
     self.heatlvl += self.heatpshot
   
@@ -365,7 +395,18 @@ class WpnKineticRocket(object):
     self.mother = mother
     self.wpn_idx = wpn_idx # 0 for primary, 1 for secondary weapon
     self.reloadtimer = None
+    self._calc_dps()
     self.ui = RailgunElement(self, playernr=self.mother.playernr)
+
+  def _calc_dps(self):
+    """
+    Here, instant means with no ship speed, and actual means with maximum speed
+    against a foe that is standing still.
+    """
+    self.instant_dps = (0.0008 * 0.1 * self.rocketmass * self.speed ** 2 
+      ) / self.reloadtime
+    self.actual_dps = (0.0008 * 0.1 * self.rocketmass * (self.mother.vmax +
+      self.speed) ** 2) / self.reloadtime
 
   def _fire(self, shiplist, objlist, statlist):
     self.clip -= 1
@@ -461,4 +502,4 @@ class ProjKineticRocket(KineticObject):
       pg.draw.polygon(surf, self.color, shapetodraw, 0)
       return True # keep after this draw cycle
   
-
+complete_wpndict(wpndict)

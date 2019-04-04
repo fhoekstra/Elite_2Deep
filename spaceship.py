@@ -3,7 +3,6 @@ import numpy as np
 
 from utils import (cxor, centershape, rotate, boundingbox, xyworldtoscreen,
  bb_on_line)
-from weapons import WpnRailgun, WpnBeamLaser
 from assets.UIElements import HPElement
 from config.controls import playermappings
 from kinobject import KineticObject
@@ -33,8 +32,8 @@ class Spaceship(KineticObject):
     self.hitbycolor = None
 
     # Weapons
-    self.wpnprim = WpnBeamLaser(self, 0)
-    self.wpnsec = WpnRailgun(self, 1)
+    self.wpnprim = None
+    self.wpnsec = None
 
     # Controls and color
     self.keymapping = playermappings[playernr-1]
@@ -155,6 +154,10 @@ class Spaceship(KineticObject):
       thrustx = 0
 
     # weapons
+    if callable(self.wpnsec): # it is probably only the class type then
+      self.wpnprim = self.wpnprim(self, wpn_idx=0)
+    if callable(self.wpnsec): # it is probably only the class type then
+      self.wpnsec = self.wpnsec(self, wpn_idx=1)
     self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
       shiplist, staticlist, objlist)
 

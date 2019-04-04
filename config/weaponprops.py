@@ -14,7 +14,7 @@ wpndict = {
     #'install': install_laser,
     'descr': "Weak, long range laser. Fires in pulses. Can overheat.",
     'range': 3000,
-    'dmg': 1, # damage per shot
+    'dmg': 2, # damage per shot
     'chargetime': 0.2, # time between pulses
   },
   'Railgun': {
