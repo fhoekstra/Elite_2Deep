@@ -125,9 +125,9 @@ class WpnBeamLaser(object):
 
     self.range = 700
     self.dps = 30
-    self.heatps = 100 # heat per second while firing
-    self.coolps = 20 # heat lost per second while not firing
-    self.cooldown_lvl = 50
+    self.heatps = 50 # heat per second while firing
+    self.coolps = 30 # heat lost per second while not firing
+    self.cooldown_lvl = 0
     self.heatcap = 100 # maximum heat level
     setpropsfromdict(self, wpndict['BeamLaser']) # import from config
 
@@ -204,26 +204,39 @@ class WpnBeamLaser(object):
 class WPnPulseLaser(WpnBeamLaser):
   def __init__(self, mother, wpn_idx = 0):
     super().__init__(mother, wpn_idx=wpn_idx)
-    self.range = 3000
-    self.dmg = 3
-    self.heatpshot = 5 # heat per shot while firing
-    self.coolpsec = 4 # heat lost per second
+    self.range = 3000 # set from config
+    self.dmg = 3 # set from config
+    self.heatpshot = 8 # heat per shot while firing
+    self.coolpsec = 15 # heat lost per second
     self.cooldown_lvl = 50
     self.heatcap = 100 # maximum heat level
-    self.chargetime = 0.3 # time between pulses
+    self.chargetime = 0.3 # time between pulses set from config
     
     # additional init for pulse
     self.color = (255, 100, 100)
     self.charging = False
     self.chargetimer = None
-    self.speed = 2000
+    self.speed = 5000
     del self.hittime
     setpropsfromdict(self, wpndict['PulseLaser']) # import from config
 
 
     self.ui = LaserElement(self, playernr=self.mother.playernr)
   
+  def _heat(self):
+    self.heatlvl += self.heatpshot
+  
+  def _cool(self):
+    if self.cooltimer is None:
+      self.cooltimer = Timer()
+      self.cooltimer.start()
+    else:
+      if self.heatlvl > 0:
+        self.heatlvl -= self.cooltimer.get() * self.coolpsec
+      self.cooltimer.start()
+
   def fire(self, objlist):
+    self._heat()
     pulse = ProjPulseLaser(self, 
       self.mother.x, self.mother.y, self.mother.phi)
     objlist.append(pulse)
@@ -232,9 +245,16 @@ class WPnPulseLaser(WpnBeamLaser):
     self.chargetimer.start()
 
   def _check_if_charged(self):
-    if self.chargetimer is not None:
+    # heat checks
+    if self.overheat and self.heatlvl < self.cooldown_lvl:
+      self.overheat = False
+    elif self.heatlvl >= self.heatcap:
+      self.overheat = True
+    # charging checks
+    if self.charging and self.chargetimer is not None:
       if self.chargetimer.get() >= self.chargetime:
         self.charging = False
+        self.chargetimer = None
 
   def handle_keypress(self, keypress, shiplist, staticlist, objlist):
     self._check_if_charged()
@@ -256,17 +276,12 @@ class ProjPulseLaser(KineticObject):
     self.vx = self.launcher.mother.vx + self.launcher.speed * np.sin(self.phi)
     self.vy = self.launcher.mother.vy + self.launcher.speed * np.cos(self.phi)
     self.color = self.launcher.color
-    self.shape = 10. * np.array([
+    self.shape = 5. * np.array([
       (0., 3.),
       (-1., 1.),
-      (-0.6, -1.),
-      (-1.5, -2.),
-      (-1.5, -3.),
-      (-0.4, -2.),
-      (0.4, -2.),
-      (1.5, -3.),
-      (1.5, -2.),
-      (0.6, -1.),
+      (-1., -1.),
+      (0., -2.),
+      (1., -1.),
       (1., 1.),
     ])
     self.shape = centershape(self.shape)
@@ -275,14 +290,21 @@ class ProjPulseLaser(KineticObject):
     self.timer = Timer()
     self.timer.start()
 
+  def _is_pulse_same_mother(self, other):
+    if hasattr(other, 'launcher'):
+      if (other.launcher.mother is self.launcher.mother 
+        and type(other) == type(self)):
+        return True
+    return False
+
   def collide(self, other, k = None):
-    if other is not self.launcher.mother:
+    if other is not self.launcher.mother and not self._is_pulse_same_mother(other):
       other.hp -= self.launcher.dmg
-      self.hp = 0
+      self.hp = -1
       if hasattr(other, 'ishit'): # only set ishit for hitmarkers if armed
         other.ishit = 10
         other.hitbycolor = self.launcher.mother.color
-      return super().collide(other, k=k)
+      return super().collide(other, k=1)
     else:
       return self.vx, self.vy
 
