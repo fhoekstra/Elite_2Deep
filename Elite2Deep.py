@@ -126,7 +126,7 @@ class Elite2Deep(object):
 
             for ship in self.shiplist:
                 # Process pilot commands
-                ship.do_key_actions(keys, self.shiplist, self.screen,
+                ship.do_key_actions(keys, self.shiplist+self.objlist, self.screen,
                     self.objlist, self.staticlist) # thrust adds forces
 
                 # Numerical integration
