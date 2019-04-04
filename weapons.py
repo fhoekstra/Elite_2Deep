@@ -23,17 +23,18 @@ def build_railgun(ship, wpn_idx):
 def build_kinetic_rocket(ship, wpn_idx):
   return WpnKineticRocket(ship, wpn_idx=wpn_idx)
 
-def populate_dict(dct, dctnames_classes, lstofprops, *classargs, **classkwargs):
+def populate_dict(dct, dctnames_classes, lstofprops, *classargs, filterfunc=None, **classkwargs):
   for _name, _class in dctnames_classes.items():
     instance = _class(*classargs, **classkwargs)
     for prop in lstofprops:
-      dct[_name][prop] = getattr(instance, prop)
+      dct[_name][prop] = filterfunc(getattr(instance, prop))
 
 def complete_wpndict(wpndict): # is called at end of this file
   names_classes = {'Railgun': WpnRailgun, 'PulseLaser': WpnPulseLaser,
     'BeamLaser': WpnBeamLaser, 'Kinetic Rocket': WpnKineticRocket}
 
-  populate_dict(wpndict, names_classes, ['instant_dps', 'actual_dps'], Spaceship())
+  populate_dict(wpndict, names_classes, ['instant_dps', 'actual_dps'],
+    Spaceship(), filterfunc = (lambda x: round(x, 1)))
 
   wpndict['PulseLaser']['build'] = build_pulse_laser
   wpndict['BeamLaser']['build'] = build_beam_laser
