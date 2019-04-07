@@ -61,13 +61,13 @@ class Elite2Deep(object):
                 if not callable(ship.wpnprim):
                     wpnprimtype = type(ship.wpnprim)
                 else:
-                    wpnprimtype = wpnprim
+                    wpnprimtype = ship.wpnprim
                 ship.wpnprim = wpnprimtype(ship, wpn_idx=0) # rearm primary
             if not ship.wpnsec is None:
                 if not callable(ship.wpnsec):
                     wpnsectype = type(ship.wpnsec)
                 else:
-                    wpnsectype = wpnsec
+                    wpnsectype = ship.wpnsec
                 ship.wpnsec = wpnsectype(ship, wpn_idx=1) # rearm secondary
 
     def resetgame(self):
