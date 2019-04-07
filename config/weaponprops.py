@@ -15,7 +15,7 @@ wpndict = {
     'descr': "Weak, long range laser. Fires in pulses. Can overheat.",
     'range': 3000,
     'dmg': 2, # damage per shot
-    'chargetime': 0.2, # time between pulses
+    'chargetime': 0.3, # time between pulses
   },
   'Railgun': {
     'name': 'Railgun',
