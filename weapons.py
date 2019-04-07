@@ -233,7 +233,7 @@ class WpnPulseLaser(WpnBeamLaser):
     super().__init__(mother, wpn_idx=wpn_idx)
     self.range = 3000 # set from config
     self.dmg = 3 # set from config
-    self.heatpshot = 8 # heat per shot while firing
+    self.heatpshot = 10 # heat per shot while firing
     self.coolpsec = 25 # heat lost per second
     self.cooldown_lvl = 80
     self.heatcap = 100 # maximum heat level

@@ -5,7 +5,7 @@ wpndict = {
     #'install': install_laser,
     'descr': "Strong, short range. Watch out not to overheat your laser!",
     'range': 700,
-    'dps': 33, # damage per second
+    'dps': 17, # damage per second
     'heatcap': 100, # max heat level
     'cooldown_lvl': 10, # heat level at which overheat status is disabled
   },
@@ -14,15 +14,15 @@ wpndict = {
     #'install': install_laser,
     'descr': "Weak, long range laser. Fires in pulses. Can overheat.",
     'range': 3000,
-    'dmg': 2, # damage per shot
-    'chargetime': 0.3, # time between pulses
+    'dmg': 1, # damage per shot
+    'chargetime': 0.25, # time between pulses
   },
   'Railgun': {
     'name': 'Railgun',
     #'install': install_railgun,
     'descr': "Hold the fire button to charge. Watch your clip and limited ammo.",
     'range': 4_000,
-    'dmg': 15,
+    'dmg': 7,
     'clipsize': 5,
     'ammo': 25,
   },
