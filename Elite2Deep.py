@@ -54,21 +54,20 @@ class Elite2Deep(object):
                 self.shiplist.insert(nr - 1, Spaceship(playernr = nr))
 
     def rearmandrepairships(self):
-        
         for ship in self.shiplist:
             ship.hp = 100 # repair
             if not ship.wpnprim is None:
                 if not callable(ship.wpnprim):
-                    wpnprimtype = type(ship.wpnprim)
+                    ship.wpnprimtype = type(ship.wpnprim)
                 else:
-                    wpnprimtype = ship.wpnprim
-                ship.wpnprim = wpnprimtype(ship, wpn_idx=0) # rearm primary
+                    ship.wpnprimtype = ship.wpnprim
+                ship.wpnprim = ship.wpnprimtype(ship, wpn_idx=0) # rearm primary
             if not ship.wpnsec is None:
                 if not callable(ship.wpnsec):
-                    wpnsectype = type(ship.wpnsec)
+                    ship.wpnsectype = type(ship.wpnsec)
                 else:
-                    wpnsectype = ship.wpnsec
-                ship.wpnsec = wpnsectype(ship, wpn_idx=1) # rearm secondary
+                    ship.wpnsectype = ship.wpnsec
+                ship.wpnsec = ship.wpnsectype(ship, wpn_idx=1) # rearm secondary
 
     def resetgame(self):
         #self.set_scene(self.playernr, self.chosen_scene)
@@ -102,7 +101,7 @@ class Elite2Deep(object):
             dt = float(t - t0)
             t0 = t
             accumulated_time += dt
-            while accumulated_time >= physics_timestep:
+            while accumulated_time >= physics_timestep and running:
                 keys = pg.key.get_pressed()
                 self.do_step(keys, physics_timestep)
                 checks = self.do_pg_checks(keys) # check for quit to menu and if stop running
@@ -164,7 +163,6 @@ class Elite2Deep(object):
         """
         colobjlist = self.objlist + self.shiplist
         vnewlist = []
-        #import pdb; pdb.set_trace()
         # Iterate through all objects. Test them for collision with all others
         for i, iobj in enumerate(colobjlist):
             vnewlist.append( (iobj.vx, iobj.vy) )
@@ -211,7 +209,6 @@ class Elite2Deep(object):
                                                 pg.RESIZABLE)
             if event.type == pg.QUIT:
                 resdict['running'] = False
-                resdict['tomenu'] = True
         return resdict
 
     def quit(self):

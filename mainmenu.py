@@ -145,7 +145,7 @@ class MainMenu(object):
               del playermappings[pl][func]
               self.screen.fill((0,0,0))
               txtlist = [self.sab.render(
-                "You pressed the "+ normalnames[e.key] 
+                "You pressed the "+ e.key.name 
                 + " key, now press the new key to use", True,
                 (255,255,255)),]
               pslist = [(0,0)]
@@ -167,7 +167,7 @@ class MainMenu(object):
         self.checkforpgevents(events = events)
     
   def _render_wpn_props(self, wpn, textlist, poslist):
-    dct = remove_key(wpn, 'build') # this should not be rendered in text
+    dct = remove_key(wpn, 'type') # this should not be rendered in text
     dct = remove_key(dct, 'name') # this has already been rendered
     draw_dict(dct, textlist, poslist, self.sab, x = 0., y0 = -0.05, dy = -0.05)
 
@@ -255,9 +255,7 @@ class MainMenu(object):
               j += 1
               notdrawn = True
             if event.key == pg.K_RETURN:
-              self.shiplist[i].wpnprim = (
-                self.wpndict[wpnlist[j]]['build'](self.shiplist[i], 0)
-              )
+              self.shiplist[i].set_weapon(self.wpndict[wpnlist[j]]['type'], 0)
               primchosen = wpnlist[j]
         self.checkforpgevents(events=events)
         if j < 0:
@@ -279,9 +277,7 @@ class MainMenu(object):
               j += 1
               notdrawn = True
             if event.key == pg.K_RETURN:
-              self.shiplist[i].wpnsec = (
-                self.wpndict[wpnlist[j]]['build'](self.shiplist[i], 1)
-              )
+              self.shiplist[i].set_weapon(self.wpndict[wpnlist[j]]['type'], 1)
               secchosen = wpnlist[j]
         self.checkforpgevents(events=events)
         if j < 0:

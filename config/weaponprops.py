@@ -25,6 +25,7 @@ wpndict = {
     'dmg': 7,
     'clipsize': 5,
     'ammo': 25,
+    'speedmodifier': 0.95
   },
   'Kinetic Rocket': {
     'name': 'Kinetic Rocket',

@@ -14,15 +14,6 @@ Wpn means a weapon as installed on a spaceship
 Proj means a projectile ejected by the weapon after it has been fired
 """
 
-def build_pulse_laser(ship, wpn_idx):
-  return WpnPulseLaser(ship, wpn_idx=wpn_idx)
-def build_beam_laser(ship, wpn_idx):
-  return WpnBeamLaser(ship, wpn_idx=wpn_idx)
-def build_railgun(ship, wpn_idx):
-  return WpnRailgun(ship, wpn_idx=wpn_idx)
-def build_kinetic_rocket(ship, wpn_idx):
-  return WpnKineticRocket(ship, wpn_idx=wpn_idx)
-
 def populate_dict(dct, dctnames_classes, lstofprops, *classargs, filterfunc=None, **classkwargs):
   for _name, _class in dctnames_classes.items():
     instance = _class(*classargs, **classkwargs)
@@ -35,11 +26,8 @@ def complete_wpndict(wpndict): # is called at end of this file
 
   populate_dict(wpndict, names_classes, ['instant_dps', 'actual_dps'],
     Spaceship(), filterfunc = (lambda x: round(x, 1)))
-
-  wpndict['PulseLaser']['build'] = build_pulse_laser
-  wpndict['BeamLaser']['build'] = build_beam_laser
-  wpndict['Railgun']['build'] = build_railgun
-  wpndict['Kinetic Rocket']['build'] = build_kinetic_rocket
+  for _name, _type in names_classes.items():
+    wpndict[_name]['type'] = _type
 
 class WpnRailgun(object):
   def __init__(self, mother, wpn_idx=0):
@@ -51,6 +39,9 @@ class WpnRailgun(object):
     self.clipsize = 5
     self.reloadtime = 3.5
     self.color = (230,243,250)
+    self.speedmodifier = 0.95
+    self.massmodifier = 1.03
+    self.Lmodifier = 1.1
     propscfg = wpndict['Railgun']
     setpropsfromdict(self, propscfg) # import from config
     self.clip = self.clipsize
@@ -69,6 +60,11 @@ class WpnRailgun(object):
       (self.instant_dps * self.chargetime * self.clipsize) # dmg per cycle
       / (self.clipsize * self.chargetime + self.reloadtime)) # time per cycle
   
+  def do_modifiers(self, ship):
+    ship.vmax = self.speedmodifier * ship.vmax
+    ship.m = self.massmodifier * ship.m
+    ship.L = self.Lmodifier * ship.L
+
   def _charge(self, continue_charging):
     """Charges railgun for 1 second. Returns whether it can fire or not."""
     if continue_charging: # key pressed
@@ -132,10 +128,12 @@ class ProjRailgun(object):
     ])
     
   def draw(self, surf, camparams):
-    if self.timer.get() < 1.5:
+    if self.timer.get() < 0.5:
       screenshape = xyworldtoscreen(self.line_ends, camparams)
-      pg.draw.line(surf, 
-        np.exp(-self.timer.get() / .1) * self.color,
+      pg.draw.line(surf, (
+        0.6 * np.exp(-self.timer.get() / .1) 
+        + (0.4*np.exp(-self.timer.get() / .4))
+        ) * self.color,
         screenshape[0], screenshape[1], 2)
       return True # keep after this draw cycle
     else:
@@ -150,6 +148,9 @@ class WpnBeamLaser(object):
     self.coolps = 30 # heat lost per second while not firing
     self.cooldown_lvl = 0
     self.heatcap = 100 # maximum heat level
+    self.speedmodifier = 1.1
+    self.massmodifier = 1.05
+    self.Lmodifier = 0.95
     setpropsfromdict(self, wpndict['BeamLaser']) # import from config
 
     # init
@@ -168,6 +169,11 @@ class WpnBeamLaser(object):
   def _calc_beam_dps(self):
     self.instant_dps = self.dps # heatlvl cancels out of below calculation
     self.actual_dps = self.instant_dps / (1 + (self.heatps / self.coolps))
+
+  def do_modifiers(self, ship):
+    ship.vmax = self.speedmodifier * ship.vmax
+    ship.m = self.massmodifier * ship.m
+    ship.L = self.Lmodifier * ship.L
 
   def _heat(self):
     self.cooltimer = None
@@ -237,6 +243,9 @@ class WpnPulseLaser(WpnBeamLaser):
     self.cooldown_lvl = 80
     self.heatcap = 100 # maximum heat level
     self.chargetime = 0.3 # time between pulses set from config
+    self.speedmodifier = 1.02
+    self.massmodifier = 0.95
+    self.Lmodifier = 1.0
     
     # additional init for pulse
     self.color = (255, 100, 100)
@@ -252,6 +261,11 @@ class WpnPulseLaser(WpnBeamLaser):
   def _calc_shot_dps(self):
     self.instant_dps = self.dmg / self.chargetime
     self.actual_dps = self.instant_dps / (1 + ((self.heatpshot/self.chargetime - self.coolps) / self.coolps))
+
+  def do_modifiers(self, ship):
+    ship.vmax = self.speedmodifier * ship.vmax
+    ship.m = self.massmodifier * ship.m
+    ship.L = self.Lmodifier * ship.L
 
   def _heat(self):
     self.heatlvl += self.heatpshot
@@ -387,6 +401,9 @@ class WpnKineticRocket(object):
     self.speed = 500
     self.induced_spin = 60_000
     self.color = (0,243,250)
+    self.speedmodifier = 1.0
+    self.massmodifier = 1.0
+    self.Lmodifier = 1.0
 
     setpropsfromdict(self, wpndict['Kinetic Rocket']) # import from config
     self.clip = self.clipsize
@@ -407,6 +424,11 @@ class WpnKineticRocket(object):
       ) / self.reloadtime
     self.actual_dps = (0.0008 * 0.1 * self.rocketmass * (self.mother.vmax +
       self.speed) ** 2) / self.reloadtime
+
+  def do_modifiers(self, ship):
+    ship.vmax = self.speedmodifier * ship.vmax
+    ship.m = self.massmodifier * ship.m
+    ship.L = self.Lmodifier * ship.L
 
   def _fire(self, shiplist, objlist, statlist):
     self.clip -= 1

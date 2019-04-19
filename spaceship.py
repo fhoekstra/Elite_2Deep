@@ -21,7 +21,7 @@ class Spaceship(KineticObject):
     # Ship properties
     self.vmax = 1000
     self.vphimax = 20
-    self.thrusters = 500
+    self.thrusters = 300
     self.shape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
     self.shape = centershape(self.shape)
 
@@ -48,6 +48,23 @@ class Spaceship(KineticObject):
     
   def set_shape(self, newshape):
     self.shape = centershape(newshape)
+
+  def set_weapon(self, Wpntype, wpn_idx):
+    """
+    wpntype is a type (constructor) of the weapon to set, wpn_idx is an int:
+    0 if it is to be set as wpnprim, 1 if it is to be set as wpnsec
+    """
+    if wpn_idx == 0:
+      self.wpnprimtype = Wpntype
+      self.wpnprim = Wpntype(self, wpn_idx=wpn_idx)
+      self.wpnprim.do_modifiers(self)
+    elif wpn_idx == 1:
+      self.wpnsectype = Wpntype
+      self.wpnsec = Wpntype(self, wpn_idx=wpn_idx)
+      self.wpnsec.do_modifiers(self)
+    else:
+      raise ValueError("Unknown value encountered in argument wpn_idx;"
+        +" should be 0 or 1")
 
   def draw(self, surf, camparams):
     if self.hp < 0:
