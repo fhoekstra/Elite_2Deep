@@ -84,7 +84,8 @@ class LaserElement(WpnUIElement):
         (self.x_in, wpn_ui_btm),
         (self.x_out, wpn_ui_btm),
       ]), camparams)
-    pg.draw.polygon(scr, color, heatpnts, 0)
+    if self.mother.heatlvl > 0:
+      pg.draw.polygon(scr, color, heatpnts, 0)
     pg.draw.polygon(scr, (100,100,100), barpnts, 2)
 
 class RailgunElement(WpnUIElement):

@@ -21,7 +21,7 @@ class Spaceship(KineticObject):
     # Ship properties
     self.vmax = 1000
     self.vphimax = 20
-    self.thrusters = 200
+    self.thrusters = 500
     self.shape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
     self.shape = centershape(self.shape)
 
