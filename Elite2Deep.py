@@ -43,7 +43,7 @@ class Elite2Deep(object):
         # main menu loop
         dispinfo = pg.display.Info()
         screenres = dispinfo.current_w, dispinfo.current_h
-        menu = mm.MainMenu(self, self.screen, self.shiplist, 
+        menu = mm.MainMenu(self, self.screen, self.shiplist,
             shipdict, wpndict, screenres)
         menu.menuloops()
 
@@ -93,7 +93,7 @@ class Elite2Deep(object):
             i += 1
             t_new = pg.time.get_ticks() * 0.001
             dt = float(t_new - t0)
-            if dt < minframetime:
+            if dt < minframetime: # 60 fps
                 pg.time.wait(int(1000 * (minframetime - dt) - 0.5))
                 t = pg.time.get_ticks() * 0.001
             else:
@@ -107,9 +107,9 @@ class Elite2Deep(object):
                 checks = self.do_pg_checks(keys) # check for quit to menu and if stop running
                 running = checks['running']
                 accumulated_time -= physics_timestep
-            
+
             self.do_render()
-                
+
         if checks['tomenu']:
             self.runmenu()
         elif goquit:
@@ -124,19 +124,17 @@ class Elite2Deep(object):
             ship.update_velocities(dt)
             ship.update_position(dt)
             ship.reset_forces()
-            
         for obj in self.objlist:
             obj.update_velocities(dt)
             obj.update_position(dt)
             obj.reset_forces() # reset forces
-        
         self.collide_objects() # collide: adds forces
         self.enforce_max_range(self.shiplist) # enforce range: adds forces
 
     def do_render(self):
          # Calculate camera params
         self.camera.update(self.shiplist)
-        # Clear screen   
+        # Clear screen
         self.screen.fill((0,0,0))
         # Fill with background
         self.background.draw(self.screen)

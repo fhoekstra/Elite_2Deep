@@ -10,3 +10,5 @@ dist/
 build/
 log.txt
 *.wav
+*.bak
+reindent.py

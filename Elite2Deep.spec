@@ -5,11 +5,11 @@ block_cipher = None
 data_files = [('font', 'font'),]
 
 a = Analysis(['Elite2Deep.py'],
-             pathex=['C:\\Users\\Freek\\Documents\\Elite 2Deep Space'],
+             pathex=[''],
              binaries=[],
              datas=data_files,
              hiddenimports=[],
-             hookspath=['C:\\Users\\Freek\\Documents\\Elite 2Deep Space\\hooks\\'],
+             hookspath=['.\\hooks\\'],
              runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,

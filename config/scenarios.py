@@ -46,8 +46,8 @@ scenarios = { # scenarios are sorted by playercount in a dict
 
 # set weapons: default lasers
 for plnr, scenlst in scenarios.items():
-  for ipl in range(len(scenlst[0])):
-    scenarios[plnr][0][ipl].update(weaponsets['lasers'])
+    for ipl in range(len(scenlst[0])):
+        scenarios[plnr][0][ipl].update(weaponsets['lasers'])
 # set weapons for other scnearios
 for ipl in range(2):
-  scenarios[2][1][ipl].update(weaponsets['kinetics'])
+    scenarios[2][1][ipl].update(weaponsets['kinetics'])
