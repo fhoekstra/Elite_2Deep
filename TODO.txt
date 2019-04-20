@@ -3,7 +3,10 @@ x fullscreen
 x >rebind controls in menu
 
 sound:
-> charging, firing, thrusters
+> firing
+>> separate sounds for different weapons
+>> charging
+> thrusters
 
 visual:
 // renderer object // no need
@@ -17,6 +20,7 @@ X > weapon UI element displacement -> fix bug with no ammo rails always top left
 X > ship select
 X > render controls from source -> add more keys to names dict
 X > hit markers
+> thruster vfx
 
 structural:
 >joysticks
@@ -33,9 +37,9 @@ x use max elasticity constant of objects for both in collision
 x some form of maximum distance
 x rockets (kinetic)
 
-> simple pulse laser
- weapon impacts mass and L
- mass and thrusters determine vmax
+x simple pulse laser
+x weapon impacts mass and L
+// mass and thrusters determine vmax // no need
  bombs
  (ram) booster pack or armour
 
