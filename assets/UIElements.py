@@ -3,7 +3,7 @@ import pygame as pg
 
 from utils import normscreentopixel
 
-###### Parameters ########
+# Parameters #############
 x_margin = 0.50          #
 y_margin = 0.49          #
 hp_width = 0.10          #
@@ -15,6 +15,7 @@ _wpn_ui_yspacer = 0.005  #
 ##########################
 wpn_ui_top = y_margin - hp_height - _wpn_ui_yspacer
 wpn_ui_btm = wpn_ui_top - _wpn_ui_height
+
 
 class UIElement(object):
     def __init__(self, mother, playernr):
@@ -39,6 +40,7 @@ class UIElement(object):
     def draw(self, scr, camparams):
         return NotImplementedError("Must be implemented in subclass")
 
+
 class HPElement(UIElement):
     def draw(self, scr, camparams):
         x_end = x_margin - hp_width*self.mother.hp/100.
@@ -52,6 +54,7 @@ class HPElement(UIElement):
             ]), camparams)
         pg.draw.polygon(scr, self.mother.color, pointslist, 0)
 
+
 class WpnUIElement(UIElement):
     def __init__(self, mother, playernr):
         super().__init__(mother, playernr)
@@ -59,25 +62,27 @@ class WpnUIElement(UIElement):
 
     def set_wpn_geom_props(self, wpn_idx):
         self.x_out = (x_margin - wpn_ui_xspacer
-            - wpn_idx * (wpn_ui_width + wpn_ui_xspacer))
+                      - wpn_idx * (wpn_ui_width + wpn_ui_xspacer))
         self.x_in = self.x_out - wpn_ui_width
+
 
 class LaserElement(WpnUIElement):
     def draw(self, scr, camparams):
         if self.mother.overheat:
-            color = (255,30,0)
+            color = (255, 30, 0)
         else:
-            color = (0,255,0)
+            color = (0, 255, 0)
         heatbottom = (wpn_ui_top
-            + (wpn_ui_btm - wpn_ui_top) * self.mother.heatlvl / 100. )
-        heatpnts = normscreentopixel( # the colored bar that indicates heat
+                      + (wpn_ui_btm - wpn_ui_top)
+                      * self.mother.heatlvl / 100.)
+        heatpnts = normscreentopixel(  # the colored bar that indicates heat
             self.sgnarr * np.array([
                 (self.x_out, wpn_ui_top),
                 (self.x_in, wpn_ui_top),
                 (self.x_in, heatbottom),
                 (self.x_out, heatbottom),
             ]), camparams)
-        barpnts = normscreentopixel( # the edges of the bar that indicate 100%
+        barpnts = normscreentopixel(  # the edges of the bar that indicate 100%
             self.sgnarr * np.array([
                 (self.x_out, wpn_ui_top),
                 (self.x_in, wpn_ui_top),
@@ -86,7 +91,8 @@ class LaserElement(WpnUIElement):
             ]), camparams)
         if self.mother.heatlvl > 0:
             pg.draw.polygon(scr, color, heatpnts, 0)
-        pg.draw.polygon(scr, (100,100,100), barpnts, 2)
+        pg.draw.polygon(scr, (100, 100, 100), barpnts, 2)
+
 
 class RailgunElement(WpnUIElement):
     def __init__(self, mother, playernr):
@@ -94,12 +100,14 @@ class RailgunElement(WpnUIElement):
         self.calc_bullet_shapes()
 
     def calc_bullet_shapes(self):
-        dy = (wpn_ui_top - wpn_ui_btm) / self.mother.clipsize # height per bullet
-        mdy = 0.2 * dy # space between bullets
+        # height per bullet
+        dy = (wpn_ui_top - wpn_ui_btm) / self.mother.clipsize
+        mdy = 0.2 * dy  # space between bullets
         hbullet = dy - mdy
         sidebullet = 0.7 * (self.x_out - self.x_in)
 
-        self.bulletlist = [] # list of arrays for bullet graphx (normalized coords)
+        # list of arrays for bullet graphx (normalized coords)
+        self.bulletlist = []
         for b in range(self.mother.clipsize):
             self.bulletlist.append(np.array([
                 (self.x_out, wpn_ui_top - b*dy),
@@ -116,15 +124,15 @@ class RailgunElement(WpnUIElement):
                 pg.draw.polygon(scr, self.color, normscreentopixel(
                     self.sgnarr*self.bulletlist[bb], camparams),
                     0)
-        else: # all out of ammo
+        else:  # all out of ammo: draw red X as empty indicator
             crosspnts = normscreentopixel(
                 self.sgnarr *
                 np.array([
-                (self.x_in, wpn_ui_top),
-                (self.x_out, wpn_ui_btm),
-                (self.x_out, wpn_ui_top),
-                (self.x_in, wpn_ui_btm),
-                ])
-                , camparams)
+                    (self.x_in, wpn_ui_top),
+                    (self.x_out, wpn_ui_btm),
+                    (self.x_out, wpn_ui_top),
+                    (self.x_in, wpn_ui_btm),
+                    ]),
+                camparams)
             pg.draw.line(scr, (255, 0, 0), crosspnts[0], crosspnts[1], 3)
             pg.draw.line(scr, (255, 0, 0), crosspnts[2], crosspnts[3], 3)

@@ -4,8 +4,10 @@ import sys
 
 import numpy as np
 
-def cxor(a,b):
+
+def cxor(a, b):
     return bool(a) != bool(b)
+
 
 def centershape(pointslist, easymode=True):
     """
@@ -13,8 +15,8 @@ def centershape(pointslist, easymode=True):
     and translates it so it is centered on the center of the filled polygon
     """
     N, _ = np.shape(pointslist)
-    x = pointslist[:,0]
-    y = pointslist[:,1]
+    x = pointslist[:, 0]
+    y = pointslist[:, 1]
 
     if easymode:
         xc = (np.amin(x) + np.amax(x)) * 0.5
@@ -23,22 +25,23 @@ def centershape(pointslist, easymode=True):
         xc = np.linalg.lstsq(np.identity(N), x)
         yc = np.linalg.lstsq(np.identity(N), y)
 
-    result = np.transpose(np.vstack((x-xc,y-yc)))
+    result = np.transpose(np.vstack((x-xc, y-yc)))
     return result
+
 
 def rotate(pointslist, phi):
     """ Rotates an array of points (x,y) by phi radians """
     rarr = np.transpose(pointslist)
     rotmatarr = np.array([[np.cos(phi), np.sin(phi)],
-                         [-np.sin(phi), np.cos(phi)]]
-                        )
+                         [-np.sin(phi), np.cos(phi)]])
     res = np.transpose(np.matmul(rotmatarr, rarr))
     return res
 
+
 def boundingbox(pointslist):
     """ left, top, width, height """
-    x = np.array(pointslist[:,0], dtype=np.intc)
-    y = np.array(pointslist[:,1], dtype=np.intc)
+    x = np.array(pointslist[:, 0], dtype=np.intc)
+    y = np.array(pointslist[:, 1], dtype=np.intc)
 
     return (
       np.amin(x),
@@ -47,14 +50,16 @@ def boundingbox(pointslist):
       np.amax(y) - np.amin(y)
     )
 
+
 def xyworldtoscreen(pointslist, camparams):
     camscale, camx, camy, dispw, disph = camparams
 
-    shapetodraw = pointslist - np.array([camx, camy]) # correct for camera pan
-    shapetodraw = shapetodraw / camscale # correct for camera zoom
-    shapetodraw += 0.5 * np.array([dispw, disph]) # correct for 0,0 not screen centr
+    shapetodraw = pointslist - np.array([camx, camy])  # correct for camera pan
+    shapetodraw = shapetodraw / camscale  # correct for camera zoom
+    shapetodraw += 0.5 * np.array([dispw, disph])  # correct for 0,0 top left
 
     return shapetodraw
+
 
 def normscreentopixel(pointslist, camparams):
     """
@@ -64,14 +69,10 @@ def normscreentopixel(pointslist, camparams):
     """
     _, _, _, dispw, disph = camparams
 
-    #AR = dispw / disph # aspect ratio
-    #xn = pointslist[:,0]
-    #yn = pointslist[:,1]
-    #y = 0.5*disph - disph*yn
-    #x = 0.5*dispw + dispw*xn/AR
     shapetodraw = np.array([dispw, -disph])*pointslist
     shapetodraw = shapetodraw + 0.5 * np.array([dispw, disph])
     return shapetodraw
+
 
 def xyscreentoworld(pointslist, camparams, resolution):
     camscale, camx, camy = camparams
@@ -81,30 +82,33 @@ def xyscreentoworld(pointslist, camparams, resolution):
     plst = plst + np.array([camx, camy])
     return plst
 
+
 def bb_on_line(rect, line_ends, dl=1):
     """ line_ends is [(x1,y1), (x2,y2)] """
     # generate points on line at interval dl
-    linelen = np.sqrt((line_ends[1,0] - line_ends[0,0])**2
-     + (line_ends[1,1] - line_ends[0,1])**2
-    )
+    linelen = np.sqrt((line_ends[1, 0] - line_ends[0, 0])**2
+                      + (line_ends[1, 1] - line_ends[0, 1])**2)
     num = int(linelen/dl)
 
-    x_arr = np.linspace(line_ends[0,0], line_ends[1,0], num=num)
-    y_arr = np.linspace(line_ends[0,1], line_ends[1,1], num=num)
+    x_arr = np.linspace(line_ends[0, 0], line_ends[1, 0], num=num)
+    y_arr = np.linspace(line_ends[0, 1], line_ends[1, 1], num=num)
     collide = False
-    #pdb.set_trace()
+
     for i in range(num):
         if rect.collidepoint(x_arr[i], y_arr[i]):
             collide = True
+
     return collide
+
 
 def remove_key(dct, key):
     d = dict(dct)
     del d[key]
     return d
 
-def draw_dict(dct, textlist, poslist, fontobj,
-  x = 0., y0 = 0.2, dy = -0.05, color = (255,255,255), translater = None):
+
+def draw_dict(dct, textlist, poslist, fontobj, x=0., y0=0.2, dy=-0.05,
+              color=(255, 255, 255), translater=None):
 
     if translater is None:
         translate = str
@@ -112,25 +116,27 @@ def draw_dict(dct, textlist, poslist, fontobj,
         def translate(val):
             try:
                 ret = translater[val]
-            except KeyError as e:
+            except KeyError:
                 ret = str(val)
             return ret
     elif callable(translater):
         translate = translater
     else:
         raise ValueError("parameter 'translater' is of unhandleable type."
-            + " Use dict or function.")
+                         + " Use dict or function.")
 
-    wi = 0 # index
+    wi = 0  # index
     for key in dct:
-        textlist.append(fontobj.render(key + " :  " + translate(dct[key]), True,
-          color))
+        textlist.append(fontobj.render(key + " :  " + translate(dct[key]),
+                        True, color))
         poslist.append((x, y0+wi*dy))
         wi += 1
+
 
 def setpropsfromdict(inst, dct):
     for key in dct:
         setattr(inst, key, dct[key])
+
 
 class Timer(object):
     def start(self):
@@ -138,6 +144,7 @@ class Timer(object):
 
     def get(self):
         return time.clock() - self.start_time
+
 
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and for PyInstaller """

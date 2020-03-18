@@ -3,11 +3,12 @@ import numpy as np
 
 from utils import xyworldtoscreen
 
+
 class Background(object):
-    def __init__(self, camera, stardensity=20./9e6, parallax = 0.2, blocksize = 3000):
+    def __init__(self, camera, stardensity=20./9e6, blocksize=3000):
         self.cam = camera
-        self.blocks = [] # a list of blocks of blocksize^2 pixels that has been filled
-        #self.parallax = parallax
+        # a list of blocks of blocksize^2 pixels that has been filled
+        self.blocks = []
         self.bsize = blocksize
 
         # stardensity stars per pixel, N stars per block, minimum 1
@@ -15,8 +16,8 @@ class Background(object):
 
     def populate_stars(self, block):
         """
-        block is a len-2 iterable with integers that indicate the position of the
-        block to be filled in a grid with length unit bsize x bsize:
+        block is a len-2 iterable with integers that indicate the position of
+        the block to be filled in a grid with length unit bsize x bsize:
         (0,0) means from (0,0) to (bsize, bsize);
         (1,0) means from (bsize, 0) to (2*bsize, bsize), etc
 
@@ -27,17 +28,19 @@ class Background(object):
 
         returns pos, col arrays
         """
-        xpos = np.random.randint(low=block[0]*self.bsize, high=(block[0]+1)*self.bsize,
-          size=self.Nstars)
-        ypos = np.random.randint(low=block[1]*self.bsize, high=(block[1]+1)*self.bsize,
-          size=self.Nstars)
-        positions = np.transpose(np.vstack((xpos,ypos)))
+        xpos = np.random.randint(low=block[0]*self.bsize,
+                                 high=(block[0]+1)*self.bsize,
+                                 size=self.Nstars)
+        ypos = np.random.randint(low=block[1]*self.bsize,
+                                 high=(block[1]+1)*self.bsize,
+                                 size=self.Nstars)
+        positions = np.transpose(np.vstack((xpos, ypos)))
         brightness = np.maximum(
-          np.minimum(1.,
-            1-0.9*np.random.randn(self.Nstars)
-          ),
-        0)
-        colors = np.transpose(np.tile(255*brightness, (3,1))).astype(int)
+            np.minimum(1.,
+                       1 - 0.9*np.random.randn(self.Nstars)
+                       ),
+            0)
+        colors = np.transpose(np.tile(255*brightness, (3, 1))).astype(int)
 
         self.blocks.append({'block': block, 'pos': positions, 'col': colors})
 
@@ -48,12 +51,12 @@ class Background(object):
         self._checkboxes(camparams)
 
         for block in self.blocks:
-            shapetodraw = (xyworldtoscreen(block['pos'], camparams)+0.5).astype(int)
+            shapetodraw = (xyworldtoscreen(block['pos'], camparams)
+                           + 0.5).astype(int)
             for j in range(self.Nstars):
-                #scr.set_at(shapetodraw[j], block['col'][j]) # takes too long?
-                pg.draw.circle(scr, block['col'][j],shapetodraw[j],
-                  int(5./camparams[0] + 0.5 ),
-                  0)
+                # Do not use scr.set_at as it is much slower
+                pg.draw.circle(scr, block['col'][j], shapetodraw[j],
+                               int(5./camparams[0] + 0.5), 0)
 
     def _checkboxes(self, camparams):
         """
@@ -61,10 +64,9 @@ class Background(object):
         given camparams.
         Creates and removes blocks in self.blocklist if necessary.
         """
-        scale , panx, pany, width, height = camparams
-        #import pdb; pdb.set_trace()
+        scale, panx, pany, width, height = camparams
         xminidx = int((panx - scale*width) / self.bsize)
-        yminidx = int((pany - scale*height) /self.bsize)
+        yminidx = int((pany - scale*height) / self.bsize)
         xmaxidx = int((panx + scale*width) / self.bsize)
         ymaxidx = int((pany + scale*height) / self.bsize)
         neededblocks = []
@@ -87,7 +89,6 @@ class Background(object):
             del block['col']
             del block['block']
             self.blocks.pop(self.blocks.index(block))
-
 
     def _inblocks(self, indices):
         for block in self.blocks:
