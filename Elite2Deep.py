@@ -176,8 +176,8 @@ class Elite2Deep(object):
 
     def enforce_max_range(self, shiplist, maxr=7_000, strength=1e-3):
         """
-        Applies a quadratic gravity-like force that only works past a certain
-        threshold distance (maxr)
+        Applies an attractive force that only works past a certain threshold
+        distance (maxr)
         """
         allx = [ship.x for ship in shiplist]
         ally = [ship.y for ship in shiplist]

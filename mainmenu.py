@@ -138,7 +138,7 @@ class MainMenu(object):
                         "Player "+str(pl+1), True, wh))
                     poslist.append((-0.2, 0.46))
                     textlist.append(self.sab.render(
-                        "Space to advance", True, wh))
+                        "Space to advance to next player", True, wh))
                     poslist.append((-0.2, -0.46))
                     textlist.append(self.sab.render(
                         "to change a key, press the key you want", True, wh))
@@ -370,7 +370,12 @@ class MainMenu(object):
         while not self.play:
             notdrawn = True
             while self.inmain:
-                keys = pg.key.get_pressed()
+                try:
+                    keys = pg.key.get_pressed()
+                except pg.error:
+                    print("Encountered an error in the main menu.\n"
+                          "Assuming you want to quit.")
+                    return
                 if notdrawn:
                     self.drawmenu()
                     notdrawn = False
