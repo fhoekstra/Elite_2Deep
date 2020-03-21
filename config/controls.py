@@ -1,6 +1,6 @@
 import pygame as pg
 
-playermappingslaptop = [{ # player 1
+playermappingslaptop = [{  # player 1
         'leftrot': pg.K_LEFT,
         'rightrot': pg.K_RIGHT,
         'thrustfwd': pg.K_UP,
@@ -10,7 +10,7 @@ playermappingslaptop = [{ # player 1
         'fire': pg.K_COMMA,
         'secfire': pg.K_PERIOD
       },
-      { # player 2
+      {  # player 2
         'leftrot': pg.K_a,
         'rightrot': pg.K_d,
         'thrustfwd': pg.K_w,
@@ -22,7 +22,7 @@ playermappingslaptop = [{ # player 1
       }
 ]
 
-playermappings = [{ # player 1
+playermappings = [{  # player 1
         'leftrot': pg.K_KP4,
         'rightrot': pg.K_KP6,
         'thrustfwd': pg.K_KP8,
@@ -32,7 +32,7 @@ playermappings = [{ # player 1
         'fire': pg.K_COMMA,
         'secfire': pg.K_PERIOD
       },
-      { # player 2
+      {  # player 2
         'leftrot': pg.K_a,
         'rightrot': pg.K_d,
         'thrustfwd': pg.K_w,

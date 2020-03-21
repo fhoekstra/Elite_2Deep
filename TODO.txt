@@ -20,11 +20,12 @@ X > weapon UI element displacement -> fix bug with no ammo rails always top left
 X > ship select
 X > render controls from source -> add more keys to names dict
 X > hit markers
+> use sprite for projectiles to increase performance
 > thruster vfx
 
 structural:
->joysticks
->>only activate control schemes for players who confirm presence at start
+> joysticks
+>> only activate control schemes for players who confirm presence at start
 > use decorators to get less if statements
 
 gameplay:

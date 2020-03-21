@@ -1,11 +1,12 @@
 import pygame as pg
 import numpy as np
 
-from utils import (cxor, centershape, rotate, boundingbox, xyworldtoscreen,
- bb_on_line)
+from utils import (cxor, centershape, rotate, xyworldtoscreen,
+                   bb_on_line)
 from assets.UIElements import HPElement
 from config.controls import playermappings
 from kinobject import KineticObject
+
 
 class Spaceship(KineticObject):
     """ The class that defines a spaceship """
@@ -22,7 +23,7 @@ class Spaceship(KineticObject):
         self.vmax = 1000
         self.vphimax = 20
         self.thrusters = 300
-        self.shape = np.array([(-20.,0.),(0.,100.), (20.,0.)])
+        self.shape = np.array([(-20., 0.), (0., 100.), (20., 0.)])
         self.shape = centershape(self.shape)
 
         # Collision and hit status
@@ -38,10 +39,10 @@ class Spaceship(KineticObject):
         # Controls and color
         self.keymapping = playermappings[playernr-1]
         if playernr == 1:
-            self.color = (255,10,10)
+            self.color = (255, 10, 10)
 
         elif playernr == 2:
-            self.color = (0,100,255)
+            self.color = (0, 100, 255)
 
         self.hp_ui = HPElement(self, playernr)
         self.hitmarker = HitMarker(self)
@@ -51,8 +52,9 @@ class Spaceship(KineticObject):
 
     def set_weapon(self, Wpntype, wpn_idx):
         """
-        wpntype is a type (constructor) of the weapon to set, wpn_idx is an int:
-        0 if it is to be set as wpnprim, 1 if it is to be set as wpnsec
+        wpntype is a type (constructor) of the weapon to set,
+        wpn_idx is an int: 0 if it is to be set as wpnprim,
+        1 if it is to be set as wpnsec
         """
         if wpn_idx == 0:
             self.wpnprimtype = Wpntype
@@ -64,13 +66,13 @@ class Spaceship(KineticObject):
             self.wpnsec.do_modifiers(self)
         else:
             raise ValueError("Unknown value encountered in argument wpn_idx;"
-              +" should be 0 or 1")
+                             + " should be 0 or 1")
 
     def draw(self, surf, camparams):
         if self.hp < 0:
-            return False # this ship is dead
-        shapetodraw = rotate(self.shape, self.phi) # rotate shape to phi
-        shapetodraw = shapetodraw + np.array([self.x,self.y]) # add physics position
+            return False  # this ship is dead
+        shapetodraw = rotate(self.shape, self.phi)  # rotate shape to phi
+        shapetodraw = shapetodraw + np.array([self.x, self.y])  # add wrld pos
         shapetodraw = xyworldtoscreen(shapetodraw, camparams)
         pg.draw.polygon(surf, self.color, shapetodraw, 3)
         # non-zero width draws lines instead of filling polygon
@@ -79,12 +81,12 @@ class Spaceship(KineticObject):
         self.wpnprim.ui.draw(surf, camparams)
         self.wpnsec.ui.draw(surf, camparams)
         if self.ishit:
-            self.hitmarker.draw(surf, camparams, color = self.hitbycolor)
+            self.hitmarker.draw(surf, camparams, color=self.hitbycolor)
             self.ishit -= 1
-            if self.ishit <= 0: # reset hit status
+            if self.ishit <= 0:  # reset hit status
                 self.ishit = 0
                 self.hitbycolor = None
-        return True # this ship stays alive
+        return True  # this ship stays alive
 
     def update_velocities(self, dt):
         """
@@ -97,10 +99,10 @@ class Spaceship(KineticObject):
         dvx = self.fx*dt/self.m
         dvy = self.fy*dt/self.m
         vnewsqrd = (self.vx+dvx)**2+(self.vy+dvy)**2
-
-        if vnewsqrd > self.vx**2 + self.vy**2: # if accelerating, decrease when close
-            invgamma = np.sqrt(np.maximum(0,(1 - vnewsqrd/self.vmax**2))) # to vmax
-        else: # if decelerating, full deceleration is allowed even near vmax
+        # if accelerating, decrease when close to vmax
+        if vnewsqrd > self.vx**2 + self.vy**2:
+            invgamma = np.sqrt(np.maximum(0, (1 - vnewsqrd/self.vmax**2)))
+        else:  # if decelerating, full deceleration is allowed even near vmax
             invgamma = 1
 
         self.vx = self.vx + invgamma*dvx
@@ -109,11 +111,8 @@ class Spaceship(KineticObject):
         # rotational
         dvphi = self.fn/self.L
         if (self.vphi + dvphi)**2 > self.vphi**2:
-            invgammaphi = np.sqrt(
-              np.maximum(0,
-                (1 - (self.vphi+dvphi)**2/self.vmax**2)
-              )
-            )
+            invgammaphi = np.sqrt(np.maximum(
+                0, (1 - (self.vphi+dvphi)**2/self.vmax**2)))
         else:
             invgammaphi = 1
         damping = 0
@@ -145,7 +144,7 @@ class Spaceship(KineticObject):
     def do_key_actions(self, keys_pressed, shiplist, scr, objlist, staticlist):
         # rotation thrusters and force
         if cxor(keys_pressed[self.keymapping['leftrot']],
-              keys_pressed[self.keymapping['rightrot']]):
+                keys_pressed[self.keymapping['rightrot']]):
             if keys_pressed[self.keymapping['leftrot']]:
                 self.fn += self.thrusters
             elif keys_pressed[self.keymapping['rightrot']]:
@@ -153,7 +152,7 @@ class Spaceship(KineticObject):
 
         # translation forward-backward thrusters
         if cxor(keys_pressed[self.keymapping['thrustfwd']],
-              keys_pressed[self.keymapping['thrustbwd']]):
+                keys_pressed[self.keymapping['thrustbwd']]):
             if keys_pressed[self.keymapping['thrustfwd']]:
                 thrusty = -self.thrusters
             elif keys_pressed[self.keymapping['thrustbwd']]:
@@ -162,7 +161,7 @@ class Spaceship(KineticObject):
             thrusty = 0
         # translation sideways thrusters
         if cxor(keys_pressed[self.keymapping['lefttrans']],
-              keys_pressed[self.keymapping['righttrans']]):
+                keys_pressed[self.keymapping['righttrans']]):
             if keys_pressed[self.keymapping['lefttrans']]:
                 thrustx = +self.thrusters
             elif keys_pressed[self.keymapping['righttrans']]:
@@ -171,17 +170,17 @@ class Spaceship(KineticObject):
             thrustx = 0
 
         # weapons
-        if callable(self.wpnsec): # it is probably only the class type then
+        if callable(self.wpnsec):  # it is probably only the class type then
             self.wpnprim = self.wpnprim(self, wpn_idx=0)
-        if callable(self.wpnsec): # it is probably only the class type then
+        if callable(self.wpnsec):  # it is probably only the class type then
             self.wpnsec = self.wpnsec(self, wpn_idx=1)
         self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
-          shiplist, staticlist, objlist)
+                                    shiplist, staticlist, objlist)
 
         self.wpnprim.handle_keypress(keys_pressed[self.keymapping['fire']],
-          shiplist, staticlist, objlist)
+                                     shiplist, staticlist, objlist)
         if not self.easytranslation:
-        # calculate world coordinates movement from thruster forces
+            # calculate world coordinates movement from thruster forces
             dfx, dfy = self._ship2world_dirs(thrustx, thrusty)
         else:
             dfx, dfy = -thrustx, thrusty
@@ -200,6 +199,7 @@ class Spaceship(KineticObject):
         yw = -sin*x - cos*y
         return xw, yw
 
+
 class HitMarker(object):
     def __init__(self, ship):
         self.ship = ship
@@ -214,7 +214,8 @@ class HitMarker(object):
         linestart = np.array([dist, dist])
         lineend = linestart + np.sqrt(2) * np.array([length, length])
         self.lines = []
-        # to be filled with lists of the form [arr(xstart, ystart), arr(xend, yend)]
+        # to be filled with lists of the form:
+        # [arr(xstart, ystart), arr(xend, yend)]
 
         for i in range(4):
             if i % 2 == 0:
@@ -229,7 +230,7 @@ class HitMarker(object):
             sgnarr = np.array([xsgn, ysgn])
             self.lines.append([sgnarr * linestart, sgnarr * lineend])
 
-    def draw(self, surf, camparams, color = None):
+    def draw(self, surf, camparams, color=None):
         if color is None:
             color = self.color
         for line in self.lines:

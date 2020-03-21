@@ -1,3 +1,7 @@
+# Sounds: ignore Audacity files and .wav source files
+sounds/*
+!sounds/*.ogg
+
 # VS code
 .vscode/
 
