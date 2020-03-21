@@ -57,8 +57,15 @@ class WpnRailgun(object):
         self.wpn_idx = wpn_idx  # 0 for primary, 1 for secondary weapon
         self.chargetimer = None
         self.reloadtimer = None
+
+        # visual and sound
         self._calc_dps()
         self.ui = RailgunElement(self, playernr=self.mother.playernr)
+        self.charge_sound = pg.mixer.Sound(
+            file=resource_path('sounds/railgun_charge.ogg'))
+        self.sounded_charge = False
+        self.fire_sound = pg.mixer.Sound(
+            file=resource_path('sounds/railgun_fire.ogg'))
 
     def _calc_dps(self):
         self.instant_dps = self.dmg / self.chargetime  # without reloading
@@ -77,7 +84,12 @@ class WpnRailgun(object):
             if self.chargetimer is None:  # charging has not started
                 self.chargetimer = Timer()
                 self.chargetimer.start()
+                self.sounded_charge = False
                 return False  # do not fire
+            elif (self.chargetimer.get() > 0.3 * self.chargetime and
+                    not self.sounded_charge):
+                self.charge_sound.play()  # start playing the sound
+                self.sounded_charge = True
             elif self.chargetimer.get() > self.chargetime:  # charging is done
                 del self.chargetimer
                 self.chargetimer = None  # remove clock
@@ -95,6 +107,7 @@ class WpnRailgun(object):
         statlist.append(railbeam)
         self.mother.hit_ships(shiplist, railbeam.line_ends, self.dmg)
         self._check_for_start_reload()
+        self.fire_sound.play()
 
     def _check_for_start_reload(self):
         if self.clip < 1 and self.ammo > 0:
@@ -115,7 +128,7 @@ class WpnRailgun(object):
     def handle_keypress(self, key_pressed, shiplist, staticlist, objlist):
         self._check_if_reloading_and_done()
         if self.clip > 0 and self._charge(key_pressed):
-            self._fire(shiplist, staticlist)
+            self._fire(shiplist, staticlist)  # _charge returns True when done
 
 
 class ProjRailgun(object):
@@ -171,8 +184,12 @@ class WpnBeamLaser(object):
         self.heattimer = None
         self.cooltimer = None
 
+        # visual and sound
         self._calc_beam_dps()
         self.ui = LaserElement(self, playernr=self.mother.playernr)
+        self.sound = pg.mixer.Sound(
+            file=resource_path('sounds/beam_laser_firing.ogg'))
+        self.sound_playing = False
 
     def _calc_beam_dps(self):
         self.instant_dps = self.dps  # heatlvl cancels out of below calculation
@@ -218,6 +235,9 @@ class WpnBeamLaser(object):
         ])
 
         self._heat()
+        if not self.sound_playing:
+            self.sound.play(loops=-1)
+            self.sound_playing = True
 
         staticlist.append(
             ProjBeamLaser(0, 0, 0, 0, line_ends=self.coords,
@@ -240,14 +260,14 @@ class WpnBeamLaser(object):
         if keypress and not self.overheat:
             self.fire(shiplist, staticlist)
         else:
+            self.sound.stop()
+            self.sound_playing = False
             self._cool()
 
 
 class WpnPulseLaser(WpnBeamLaser):
     def __init__(self, mother, wpn_idx=0):
         super().__init__(mother, wpn_idx=wpn_idx)
-        self.sound = pg.mixer.Sound(  # pg error: mixer not initialized
-            file=resource_path('sounds/pulse_laser.ogg'))
         self.range = 3000  # set from config
         self.dmg = 3  # set from config
         self.heatpshot = 10  # heat per shot while firing
@@ -268,8 +288,11 @@ class WpnPulseLaser(WpnBeamLaser):
         # Because these properties are inherited and not used
         setpropsfromdict(self, wpndict['PulseLaser'])  # import from config
 
+        # visual and sound
         self._calc_shot_dps()
         self.ui = LaserElement(self, playernr=self.mother.playernr)
+        self.sound = pg.mixer.Sound(
+            file=resource_path('sounds/pulse_laser.ogg'))
 
     def _calc_shot_dps(self):
         self.instant_dps = self.dmg / self.chargetime
@@ -435,6 +458,11 @@ class WpnKineticRocket(object):
         self.reloadtimer = None
         self._calc_dps()
         self.ui = RailgunElement(self, playernr=self.mother.playernr)
+        self.fire_sound = pg.mixer.Sound(
+            file=resource_path('sounds/kinetic_rocket_fire.ogg'))
+        self.reloaded_sound = pg.mixer.Sound(
+            file=resource_path('sounds/kinetic_rocket_reload.ogg'))
+        # TODO crash sound init here too
 
     def _calc_dps(self):
         """
@@ -462,6 +490,7 @@ class WpnKineticRocket(object):
         self.mother.vx -= dvmother * np.sin(self.mother.phi)
         self.mother.vy -= dvmother * np.cos(self.mother.phi)
         self._check_for_start_reload()
+        self.fire_sound.play()
 
     def _check_for_start_reload(self):
         if self.clip < 1 and self.ammo > 0:
@@ -474,9 +503,12 @@ class WpnKineticRocket(object):
                 if self.ammo >= self.clipsize:
                     self.ammo -= self.clipsize
                     self.clip = self.clipsize
+                    self.reloaded_sound.play()
                 else:
                     self.clip = self.ammo
                     self.ammo = 0
+                    if self.clip >= 1:
+                        self.reloaded_sound.play()
                 self.reloadtimer = None
 
     def handle_keypress(self, key_pressed, shiplist, staticlist, objlist):
@@ -553,4 +585,3 @@ class ProjKineticRocket(KineticObject):
             shapetodraw = xyworldtoscreen(shapetodraw, camparams)
             pg.draw.polygon(surf, self.color, shapetodraw, 0)
             return True  # keep after this draw cycle
-
