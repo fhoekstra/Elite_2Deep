@@ -6,14 +6,17 @@ from render.camera import Camera
 from render.background import Background
 from assets.shipshapes import shipdict
 from config.scenarios import scenarios
-import mainmenu as mm
-from weapons import wpndict
 from utils import setpropsfromdict
 
 
 class Elite2Deep(object):
-    def __init__(self, screen):
-        self.screen = screen
+    def __init__(self):
+        # Initialize pygame, set up screen
+        pg.mixer.pre_init(44100, -16, 1, 512)
+        pg.init()
+        reso = (xmax, ymax) = (1200, 600)
+        self.screen = pg.display.set_mode(reso, pg.RESIZABLE)
+        # Initialize this game
         self.playernr = 2
         self.chosen_scene = 0
         self.shiplist = []
@@ -21,7 +24,7 @@ class Elite2Deep(object):
         self.scenes = scenarios
         self.set_scene(self.playernr, self.chosen_scene)
 
-        # Rendering init
+        # Custom renderer init
         self.camera = Camera()
         self.camera.update(self.shiplist)
         self.background = Background(self.camera)
@@ -44,6 +47,10 @@ class Elite2Deep(object):
         # main menu loop
         dispinfo = pg.display.Info()
         screenres = dispinfo.current_w, dispinfo.current_h
+        import mainmenu as mm
+        from weapons import wpndict, complete_wpndict
+        # Add the instant dps and actual dps to the 'custom' wpndict
+        complete_wpndict(wpndict)
         menu = mm.MainMenu(self, self.screen, self.shiplist,
                            shipdict, wpndict, screenres)
         menu.menuloops()
@@ -217,10 +224,6 @@ class Elite2Deep(object):
 
 
 if __name__ == "__main__":
-    # Initialize pygame, set up screen
-    pg.init()
-    reso = (xmax, ymax) = (1200, 600)
-    screen = pg.display.set_mode(reso, pg.RESIZABLE)
     # Run game
-    game = Elite2Deep(screen)
+    game = Elite2Deep()
     game.run()

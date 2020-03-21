@@ -7,9 +7,6 @@ from utils import normscreentopixel, remove_key, draw_dict, resource_path
 
 class MainMenu(object):
     def __init__(self, game, scr, shiplist, shipdict, wpndict, screenres):
-        # pygame video system
-        pg.init()
-        pg.display.set_mode(screenres, pg.RESIZABLE)
         # status bools
         self.inmain = True
         self.incontrols = False

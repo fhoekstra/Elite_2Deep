@@ -2,6 +2,7 @@ import numpy as np
 import pygame as pg
 
 from utils import xyworldtoscreen, Timer, setpropsfromdict, rotate, centershape
+from utils import resource_path
 from assets.UIElements import LaserElement, RailgunElement
 
 from config.weaponprops import wpndict
@@ -23,7 +24,7 @@ def populate_dict(dct, dctnames_classes, lstofprops, *classargs,
             dct[_name][prop] = filterfunc(getattr(instance, prop))
 
 
-def complete_wpndict(wpndict):  # is called at end of this file
+def complete_wpndict(wpndict):
     names_classes = {'Railgun': WpnRailgun, 'PulseLaser': WpnPulseLaser,
                      'BeamLaser': WpnBeamLaser,
                      'Kinetic Rocket': WpnKineticRocket}
@@ -245,6 +246,8 @@ class WpnBeamLaser(object):
 class WpnPulseLaser(WpnBeamLaser):
     def __init__(self, mother, wpn_idx=0):
         super().__init__(mother, wpn_idx=wpn_idx)
+        self.sound = pg.mixer.Sound(  # pg error: mixer not initialized
+            file=resource_path('sounds/pulse_laser.ogg'))
         self.range = 3000  # set from config
         self.dmg = 3  # set from config
         self.heatpshot = 10  # heat per shot while firing
@@ -298,6 +301,7 @@ class WpnPulseLaser(WpnBeamLaser):
         self.charging = True
         self.chargetimer = Timer()
         self.chargetimer.start()
+        self.sound.play()
 
     def _check_if_charged(self):
         # heat checks
@@ -550,6 +554,3 @@ class ProjKineticRocket(KineticObject):
             pg.draw.polygon(surf, self.color, shapetodraw, 0)
             return True  # keep after this draw cycle
 
-
-# Add the default options from this file to the 'custom' wpndict options
-complete_wpndict(wpndict)
