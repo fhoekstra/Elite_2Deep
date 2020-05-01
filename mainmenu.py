@@ -2,6 +2,7 @@ import pygame as pg
 import numpy as np
 
 from config.controls import playermappings
+from pathlib import Path
 from utils import normscreentopixel, remove_key, draw_dict, resource_path
 
 
@@ -30,7 +31,7 @@ class MainMenu(object):
         gr = (0, 255, 0)
         red = (255, 0, 0)
         pg.font.init()
-        self.sab = pg.font.Font(resource_path('font\\Sabatica-regular.ttf'),
+        self.sab = pg.font.Font(resource_path(Path('font/Sabatica-regular.ttf')),
                                 28)
         self.play_text = self.sab.render('[P]LAY', True, gr)
         self.reset_text = self.sab.render('[R]estart', True, gr)
