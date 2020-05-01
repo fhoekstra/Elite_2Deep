@@ -1,8 +1,8 @@
-import time
 import os
 import sys
 
 import numpy as np
+import pygame as pg
 
 
 def cxor(a, b):
@@ -140,10 +140,10 @@ def setpropsfromdict(inst, dct):
 
 class Timer(object):
     def start(self):
-        self.start_time = time.clock()
+        self.start_time = pg.time.get_ticks() * 0.001
 
     def get(self):
-        return time.clock() - self.start_time
+        return pg.time.get_ticks() * 0.001 - self.start_time
 
 
 def resource_path(relative_path):
