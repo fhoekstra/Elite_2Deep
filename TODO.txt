@@ -3,9 +3,9 @@ x fullscreen
 x >rebind controls in menu
 
 sound:
-> firing
->> separate sounds for different weapons
->> charging
+x > firing
+x >> separate sounds for different weapons
+x >> charging
 > thrusters
 
 visual:
@@ -24,6 +24,7 @@ X > hit markers
 > thruster vfx
 
 structural:
+> player objects
 > joysticks
 >> only activate control schemes for players who confirm presence at start
 > use decorators to get less if statements
