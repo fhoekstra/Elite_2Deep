@@ -17,9 +17,9 @@ class Elite2Deep(object):
         reso = (xmax, ymax) = (1200, 600)
         self.screen = pg.display.set_mode(reso, pg.RESIZABLE)
         # Initialize this game
-        self.playernr = 2
         self.chosen_scene = 0
         self.shiplist = []
+        self.playernr = self.get_players()
 
         self.scenes = scenarios
         self.set_scene(self.playernr, self.chosen_scene)
@@ -29,8 +29,25 @@ class Elite2Deep(object):
         self.camera.update(self.shiplist)
         self.background = Background(self.camera)
 
+    def get_players(self):
+        count = 0
+        done = False
+        while not done:
+            pg.event.pump()
+            resp = ''
+            resp = input("To add a player, press 'A', then Enter, to finish, press Enter")
+            if resp.strip().lower() == 'a':
+                pg.event.pump()
+                count += 1
+                self.shiplist.append(Spaceship(playernr=count))
+            else:
+                done = True
+                return count
+
     def set_scene(self, playernr, j):
         self.resurrectdead()  # ships
+        # TODO ^THIS re-inits ships and thus also asks for controls again.
+        # TODO separate ships from players
 
         pscenes = self.scenes[playernr]
         for i, shipprops in enumerate(pscenes[j]):

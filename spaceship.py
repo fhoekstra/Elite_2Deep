@@ -6,6 +6,10 @@ from utils import (cxor, centershape, rotate, xyworldtoscreen,
 from assets.UIElements import HPElement
 from config.controls import playermappings
 from kinobject import KineticObject
+from input_manager import ControlsManager
+
+SHIP_CONTROLS = ['leftrot', 'rightrot', 'thrustfwd', 'thrustbwd', 'lefttrans',
+                 'righttrans', 'fire', 'secfire']
 
 
 class Spaceship(KineticObject):
@@ -14,10 +18,23 @@ class Spaceship(KineticObject):
     def __init__(self, playernr=1):
         # init
         super().__init__()
-        self.playernr = playernr
+        self.playernr = playernr  # TODO move to Player class
+        self.inputmanager = ControlsManager(
+            SHIP_CONTROLS,
+            default_keymap=playermappings[playernr-1])
         self.rotdamping = 0
         self.easydamping = 10.
         self.easytranslation = False
+
+        # Controls and color
+        if playernr == 1:
+            self.color = (255, 10, 10)
+
+        elif playernr == 2:
+            self.color = (0, 100, 255)
+
+        self.hp_ui = HPElement(self, playernr)
+        self.hitmarker = HitMarker(self)
 
         # Ship properties
         self.vmax = 1000
@@ -35,17 +52,6 @@ class Spaceship(KineticObject):
         # Weapons
         self.wpnprim = None
         self.wpnsec = None
-
-        # Controls and color
-        self.keymapping = playermappings[playernr-1]
-        if playernr == 1:
-            self.color = (255, 10, 10)
-
-        elif playernr == 2:
-            self.color = (0, 100, 255)
-
-        self.hp_ui = HPElement(self, playernr)
-        self.hitmarker = HitMarker(self)
 
     def set_shape(self, newshape):
         self.shape = centershape(newshape)
@@ -142,6 +148,9 @@ class Spaceship(KineticObject):
             self.rotdamping = 0
 
     def do_key_actions(self, keys_pressed, shiplist, scr, objlist, staticlist):
+
+        # TODO re-write this function to use the ControlsManager class
+
         # rotation thrusters and force
         if cxor(keys_pressed[self.keymapping['leftrot']],
                 keys_pressed[self.keymapping['rightrot']]):
@@ -159,6 +168,7 @@ class Spaceship(KineticObject):
                 thrusty = +self.thrusters
         else:
             thrusty = 0
+
         # translation sideways thrusters
         if cxor(keys_pressed[self.keymapping['lefttrans']],
                 keys_pressed[self.keymapping['righttrans']]):
