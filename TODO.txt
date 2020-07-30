@@ -24,9 +24,15 @@ X > hit markers
 > thruster vfx
 
 structural:
-> player objects
+X > player objects
+
 > joysticks
->> only activate control schemes for players who confirm presence at start
+X >> only activate control schemes for players who confirm presence at start
+>> save controls config with joystick names
+>> make keyboard wrapper to treat keyboard as joystick
+>>> enable multiple players on keyboard again (generate unique ids for 'keyboardjoysticks'?)
+>> re-work initial controls setting with visual menu
+
 > use decorators to get less if statements
 
 gameplay:
