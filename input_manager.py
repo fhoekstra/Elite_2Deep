@@ -119,6 +119,9 @@ class ControlsManager:
                 self.controls_map[ctrl] = wait_for_return(
                     self.get_active_btn_or_axis)
 
+            # TODO
+            #response = input("Do you want to save this mapping?")
+
     def get_active_btn_or_axis(self):
         events = pg.event.get()
         # check buttons for activity...
@@ -207,27 +210,27 @@ class ControlsManager:
                             or hat_y < -0.5 or hat_y > 0.5:
                         return joystick
 
-    def get_states(self, events):
-        for ctrl in self.controls_map:
+    def get_states(self):
+        for name, ctrl in self.controls_map.items():
             if ctrl.is_button:
-                self.states[ctrl] = self.joystick.get_button(ctrl.index)
+                self.states[name] = self.joystick.get_button(ctrl.index)
             elif ctrl.is_axis:
                 measured = self.joystick.get_axis(ctrl.index)
                 if ctrl.direction == 'pos':
-                    self.states[ctrl] = max(0., measured)
+                    self.states[name] = max(0., measured)
                 elif ctrl.direction == 'neg':
-                    self.states[ctrl] = min(0., measured) * -1.
+                    self.states[name] = min(0., measured) * -1.
                 elif ctrl.direction == 'fullpos':  # map [-1,..,1] to [0,..,1]
-                    self.states[ctrl] = (measured + 1.) / 2.
+                    self.states[name] = (measured + 1.) / 2.
                 elif ctrl.direction == 'fullneg':
-                    self.states[ctrl] = (measured + 1.) / 2. * -1.
+                    self.states[name] = (measured + 1.) / 2. * -1.
             elif ctrl.is_hat:
                 measured_x, measured_y = self.joystick.get_hat(ctrl.index)
                 if ctrl.direction == 'left':
-                    self.states[ctrl] = min(0., measured_x) * -1.
+                    self.states[name] = min(0., measured_x) * -1.
                 elif ctrl.direction == 'right':
-                    self.states[ctrl] = max(0., measured_x)
+                    self.states[name] = max(0., measured_x)
                 elif ctrl.direction == 'down':
-                    self.states[ctrl] = min(0., measured_y) * -1.
+                    self.states[name] = min(0., measured_y) * -1.
                 elif ctrl.direction == 'up':
-                    self.states[ctrl] = max(0., measured_y)
+                    self.states[name] = max(0., measured_y)

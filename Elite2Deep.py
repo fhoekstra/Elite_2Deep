@@ -1,7 +1,7 @@
 import pygame as pg
 import numpy as np
 
-from spaceship import Spaceship
+from spaceship import Spaceship, Player
 from render.camera import Camera
 from render.background import Background
 from assets.shipshapes import shipdict
@@ -19,7 +19,8 @@ class Elite2Deep(object):
         # Initialize this game
         self.chosen_scene = 0
         self.shiplist = []
-        self.playernr = self.get_players()
+        self.players = []
+        self.get_players()
 
         self.scenes = scenarios
         self.set_scene(self.playernr, self.chosen_scene)
@@ -39,7 +40,10 @@ class Elite2Deep(object):
             if resp.strip().lower() == 'a':
                 pg.event.pump()
                 count += 1
-                self.shiplist.append(Spaceship(playernr=count))
+                player = Player(count)
+                self.players.append(player)
+                self.shiplist.append(Spaceship(player))
+                self.playernr = count
             else:
                 done = True
                 return count
@@ -73,10 +77,11 @@ class Elite2Deep(object):
         menu.menuloops()
 
     def resurrectdead(self):
-        playersalive = [ship.playernr for ship in self.shiplist]
-        for nr in np.arange(self.playernr) + 1:  # revive dead ships
-            if nr not in playersalive:
-                self.shiplist.insert(nr - 1, Spaceship(playernr=nr))
+        playersalive = [ship.player for ship in self.shiplist]
+        playersdead = [player for player in self.players
+                       if player not in playersalive]
+        for player in playersdead:
+            self.shiplist.insert(player.playernr - 1, Spaceship(player))
 
     def rearmandrepairships(self):
         for ship in self.shiplist:

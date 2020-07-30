@@ -16,6 +16,32 @@ Proj means a projectile ejected by the weapon after it has been fired
 """
 
 
+class Mock:
+
+    def member_template(self, *args, **kwargs):
+        pass
+
+    def __init__(self, dct=None, mfuncnames=None, mfuncmembers=None):
+        if dct is not None:
+            for key, val in dct.items():
+                setattr(self, key, val)
+
+        if mfuncnames is not None:
+            for funcname in mfuncnames:
+                setattr(self, funcname, self.member_template)
+
+        if mfuncmembers is not None:
+            for mfuncname, mfunc in mfuncmembers.items():
+                setattr(self, mfuncname, mfunc)
+
+
+def MockSpaceship():
+    return Mock({'x': 0, 'y': 0, 'phi': 0,
+                 'vx': 0, 'vy': 0, 'vmax': 1, 'color': (255, 255, 255),
+                 'player': Mock({'playernr': 1})
+                 })
+
+
 def populate_dict(dct, dctnames_classes, lstofprops, *classargs,
                   filterfunc=None, **classkwargs):
     for _name, _class in dctnames_classes.items():
@@ -30,7 +56,7 @@ def complete_wpndict(wpndict):
                      'Kinetic Rocket': WpnKineticRocket}
 
     populate_dict(wpndict, names_classes, ['instant_dps', 'actual_dps'],
-                  Spaceship(), filterfunc=(lambda x: round(x, 1)))
+                  MockSpaceship(), filterfunc=(lambda x: round(x, 1)))
     for _name, _type in names_classes.items():
         wpndict[_name]['type'] = _type
 
@@ -60,7 +86,7 @@ class WpnRailgun(object):
 
         # visual and sound
         self._calc_dps()
-        self.ui = RailgunElement(self, playernr=self.mother.playernr)
+        self.ui = RailgunElement(self, playernr=self.mother.player.playernr)
         self.charge_sound = pg.mixer.Sound(
             file=resource_path('sounds/railgun_charge.ogg'))
         self.sounded_charge = False
@@ -186,7 +212,7 @@ class WpnBeamLaser(object):
 
         # visual and sound
         self._calc_beam_dps()
-        self.ui = LaserElement(self, playernr=self.mother.playernr)
+        self.ui = LaserElement(self, playernr=self.mother.player.playernr)
         self.sound = pg.mixer.Sound(
             file=resource_path('sounds/beam_laser_firing.ogg'))
         self.sound_playing = False
@@ -290,7 +316,7 @@ class WpnPulseLaser(WpnBeamLaser):
 
         # visual and sound
         self._calc_shot_dps()
-        self.ui = LaserElement(self, playernr=self.mother.playernr)
+        self.ui = LaserElement(self, playernr=self.mother.player.playernr)
         self.sound = pg.mixer.Sound(
             file=resource_path('sounds/pulse_laser.ogg'))
 
@@ -457,7 +483,7 @@ class WpnKineticRocket(object):
         self.wpn_idx = wpn_idx  # 0 for primary, 1 for secondary weapon
         self.reloadtimer = None
         self._calc_dps()
-        self.ui = RailgunElement(self, playernr=self.mother.playernr)
+        self.ui = RailgunElement(self, playernr=self.mother.player.playernr)
         self.fire_sound = pg.mixer.Sound(
             file=resource_path('sounds/kinetic_rocket_fire.ogg'))
         self.reloaded_sound = pg.mixer.Sound(

@@ -12,29 +12,46 @@ SHIP_CONTROLS = ['leftrot', 'rightrot', 'thrustfwd', 'thrustbwd', 'lefttrans',
                  'righttrans', 'fire', 'secfire']
 
 
-class Spaceship(KineticObject):
-    """ The class that defines a spaceship """
-
-    def __init__(self, playernr=1):
-        # init
-        super().__init__()
-        self.playernr = playernr  # TODO move to Player class
+class Player:
+    """
+    This class contains everything that is related to the player and not
+    specific to the state of the spaceship she controls
+    """
+    def __init__(self, playernr):
+        self.playernr = playernr
         self.inputmanager = ControlsManager(
             SHIP_CONTROLS,
             default_keymap=playermappings[playernr-1])
-        self.rotdamping = 0
-        self.easydamping = 10.
-        self.easytranslation = False
 
-        # Controls and color
+        # Color and cosmetics
         if playernr == 1:
             self.color = (255, 10, 10)
 
         elif playernr == 2:
             self.color = (0, 100, 255)
 
-        self.hp_ui = HPElement(self, playernr)
+        # Difficulty settings
+        self.rotdamping = 0
+        self.easydamping = 10.
+        self.easytranslation = False
+
+
+class Spaceship(KineticObject):
+    """ The class that defines a spaceship """
+
+    def __init__(self, player):
+        # init
+        super().__init__()
+        self.player = player
+
+        # Player-related things that I will keep here for now
+        self.color = self.player.color
+        self.hp_ui = HPElement(self, player.playernr)
         self.hitmarker = HitMarker(self)
+
+        self.rotdamping = self.player.rotdamping
+        self.easydamping = self.player.easydamping
+        self.easytranslation = self.player.easytranslation
 
         # Ship properties
         self.vmax = 1000
@@ -135,8 +152,12 @@ class Spaceship(KineticObject):
                 if bb_on_line(ship.rect, line_ends):
                     shiphit = True
                     ship.hp = ship.hp - dmg
+
+                    # 6 is the number of frames for which hit markers are
+                    # visible around a target. I forgot why, and the way this
+                    # works is really convoluted
                     ship.ishit = 6
-                    ship.hitbycolor = self.color
+                    ship.hitbycolor = self.player.color
                     if ship.hp < 0:
                         shiplist.pop(shiplist.index(ship))
         return shiphit
@@ -149,50 +170,34 @@ class Spaceship(KineticObject):
 
     def do_key_actions(self, keys_pressed, shiplist, scr, objlist, staticlist):
 
-        # TODO re-write this function to use the ControlsManager class
+        #import pdb; pdb.set_trace()
+        self.player.inputmanager.get_states()
+        states = self.player.inputmanager.states
 
-        # rotation thrusters and force
-        if cxor(keys_pressed[self.keymapping['leftrot']],
-                keys_pressed[self.keymapping['rightrot']]):
-            if keys_pressed[self.keymapping['leftrot']]:
-                self.fn += self.thrusters
-            elif keys_pressed[self.keymapping['rightrot']]:
-                self.fn -= self.thrusters
+        def _diff(p, m):
+            return states[p] - states[m]
 
-        # translation forward-backward thrusters
-        if cxor(keys_pressed[self.keymapping['thrustfwd']],
-                keys_pressed[self.keymapping['thrustbwd']]):
-            if keys_pressed[self.keymapping['thrustfwd']]:
-                thrusty = -self.thrusters
-            elif keys_pressed[self.keymapping['thrustbwd']]:
-                thrusty = +self.thrusters
-        else:
-            thrusty = 0
-
-        # translation sideways thrusters
-        if cxor(keys_pressed[self.keymapping['lefttrans']],
-                keys_pressed[self.keymapping['righttrans']]):
-            if keys_pressed[self.keymapping['lefttrans']]:
-                thrustx = +self.thrusters
-            elif keys_pressed[self.keymapping['righttrans']]:
-                thrustx = -self.thrusters
-        else:
-            thrustx = 0
+        self.fn = _diff('leftrot', 'rightrot') * self.thrusters
+        thrusty = _diff('thrustbwd', 'thrustfwd') * self.thrusters
+        thrustx = _diff('lefttrans', 'righttrans') * self.thrusters
 
         # weapons
-        if callable(self.wpnsec):  # it is probably only the class type then
+        if callable(self.wpnsec):
+            # it is probably only the class type then,
+            # so we need to initialize
             self.wpnprim = self.wpnprim(self, wpn_idx=0)
-        if callable(self.wpnsec):  # it is probably only the class type then
+        if callable(self.wpnsec):
             self.wpnsec = self.wpnsec(self, wpn_idx=1)
-        self.wpnsec.handle_keypress(keys_pressed[self.keymapping['secfire']],
+        self.wpnsec.handle_keypress(states['secfire'] > 0.5,
                                     shiplist, staticlist, objlist)
 
-        self.wpnprim.handle_keypress(keys_pressed[self.keymapping['fire']],
+        self.wpnprim.handle_keypress(states['fire'] > 0.5,
                                      shiplist, staticlist, objlist)
+
+        # Calculate thrust directions in world coordinates
         if not self.easytranslation:
-            # calculate world coordinates movement from thruster forces
             dfx, dfy = self._ship2world_dirs(thrustx, thrusty)
-        else:
+        else:  # 'easy' means up is up on screen, etc.
             dfx, dfy = -thrustx, thrusty
         self.fx += dfx
         self.fy += dfy
