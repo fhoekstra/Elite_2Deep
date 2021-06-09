@@ -11,7 +11,7 @@ mccabe == 0.6.1
 # mkl-fft
 # mkl-random == 1.0.2
 numpy == 1.16.4
-pip == 19.0.3
+pip == 19.2
 pycodestyle == 2.5.0
 pyflakes == 2.1.1
 pygame == 1.9.5
